@@ -19,6 +19,45 @@ code. They describe **how it works and where**, not every line.
 | [gotchas.md](gotchas.md) | Engine limits we ran into and the workarounds (read before changing world/portal code) |
 | [tuning.md](tuning.md) | Where every number you might want to change lives |
 
+## Contributing
+
+Fixes and additions are welcome: fork the repo and send a pull request.
+Vibe-coded (AI-written) pull requests are fine too. `CLAUDE.md` and these docs
+are written so an AI assistant can find its way around, so point yours at them.
+
+**Branches**
+
+- `dev` is the latest version. Send pull requests here.
+- `release` is the version that's on the Steam Workshop right now.
+
+**Setting it up**
+
+1. Clone your fork into your Scrap Mechanic mods folder:
+   `%APPDATA%\Axolot Games\Scrap Mechanic\User\User_<your id>\Mods\PacificScrap`
+2. Start a new custom game with Pacific Scrap (the local one, not the Workshop
+   copy, if you're subscribed to both).
+
+**Before you send it**
+
+- **Clear `Cache/`** (everything inside it) after every change, scripts too.
+  The game keeps old copies there and won't notice your edits otherwise. Only
+  the mod's own `Cache/`, never the game's.
+- **Test it in game**, and check the log
+  (`Steam\steamapps\common\Scrap Mechanic\Logs\game-*.log`, lines tagged
+  `[PacificScrap]`) for errors.
+- **Old saves must keep loading.** If you change saved data, add a migration
+  rather than breaking it. Test on a save from before your change if you can.
+- Read [gotchas.md](gotchas.md) before touching worlds, portals or saves: those
+  limits have broken saves before.
+- Match the code style: tabs, `sv_`/`cl_` names, comments in plain English.
+- Say in the pull request what you changed and how you tested it.
+
+**Found a bug but not fixing it?** Open an issue, and attach your log file from
+the session where it happened.
+
+By contributing you agree your changes are shared under the mod's
+[MIT license](../LICENSE).
+
 ## Editors (open in a browser)
 
 Double-click the file to open it in Edge or Chrome (they can save straight into

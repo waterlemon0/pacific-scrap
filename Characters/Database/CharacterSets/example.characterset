@@ -39,6 +39,40 @@
 				"scriptPath": "$CONTENT_DATA/Scripts/HideoutFarmer.lua"
 			},
 			"uuid": "e7342b5f-ed16-4adc-9f04-69b90aceff2b"
+		},
+		{
+			"//": "A bunny (Scripts/Bunny.lua): survival's trash ball, small. The body is invisible; the ball is drawn on it",
+			"capsule": { "height": 0.9, "radius": 0.45 },
+			"character": {
+				"data": {},
+				"scriptClass": "BunnyCharacter",
+				"scriptPath": "$CONTENT_DATA/Scripts/Bunny.lua"
+			},
+			"hit": {
+				"stand": { "col": "$SURVIVAL_DATA/Character/Char_Totebot/char_totebot_hit_col.obj", "offset": [ 0.0, 0.0, 0.4 ] }
+			},
+			"mass": 80,
+			"material": "Slime",
+			"movement": {
+				"canSwim": true,
+				"crouchSpeed": 1.0,
+				"facingRotationSpeed": 20.0,
+				"headingRotationSpeed": 2.5,
+				"ladderMoveSpeed": 3.2,
+				"moveSpeed": 3.0,
+				"slowDownSpeed": 0.5,
+				"sprintSpeed": 30.0
+			},
+			"name": "Bunny",
+			"renderables": [ "$SURVIVAL_DATA/Character/Char_Trashball/char_trashball.rend" ],
+			"showInEditor": false,
+			"sound": { "crouchedMovementSoundFrames": [ 1 ], "movementSoundFrames": [ 1 ] },
+			"unit": {
+				"data": {},
+				"scriptClass": "BunnyUnit",
+				"scriptPath": "$CONTENT_DATA/Scripts/Bunny.lua"
+			},
+			"uuid": "5b7e2c91-3d4a-4f6e-a8b2-9c1d7e3f6a05"
 		}
 	]
 }

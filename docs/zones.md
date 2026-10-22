@@ -163,6 +163,65 @@ Per tier settings live in `ZONE_TIERS` (layouts.lua):
 `/testtier <outer|mid|deep>` makes new zones count as that tier (`g_testTier`
 in `ZoneTierOf`).
 
+### Bunnies
+
+Pacific Drive's hares: small junk balls (survival's trash ball from the
+Trashbot fight, its renderable drawn at `BUNNY_BALL_SCALE` on an invisible
+character, `Bunny` in `Characters/.../example.characterset`). Settings are the
+`BUNNY_*` values in layouts.lua.
+
+- **Spawning** (`ZoneBunnies.lua`): a group (`BUNNY_GROUP_SIZE`) in some cells
+  on their first load this trip, by tier (`BUNNY_CELL_CHANCE`), never within
+  `BUNNY_SAFE_DISTANCE` of a player or in landmarks. They're leftovers for the
+  pool. `/bunnies` puts a group 25 m ahead of you.
+- **The chase** (`BunnyUnit` in `Bunny.lua`): an idle bunny looks every 10
+  ticks for someone within `BUNNY_NOTICE_RADIUS`: a car they're driving (their
+  locking interactable on a dynamic body) or them on foot. Chasing, it runs
+  every tick at a point that circles the target (all the way round something
+  slow, swinging behind something fast), the circle shrinking over
+  `BUNNY_CHASE_SECONDS` (`BUNNY_FOOT_CHASE_SECONDS` on foot). Its speed is the
+  target's plus at most `BUNNY_CATCH_UP`: it switches between sprint and walk
+  to hold that, since units can't be given a speed. It hops every
+  `BUNNY_HOP_TICKS`.
+- **Pouncing**: from `BUNNY_LEAP_FROM` into the chase, within
+  `BUNNY_LEAP_RANGE` of the target's edge, it leaps (an impulse) in an arc
+  `BUNNY_LEAP_HEIGHT` high at where the target will be when it comes down if it
+  carries on as it is, so swerving or braking makes it miss
+  (`BUNNY_MISS_SECONDS` on the ground, then a cooldown). Hitting the car
+  (`server_onCollision` with a shape of that creation, or a raycast at it within
+  `BUNNY_LATCH_DISTANCE`) latches on; hitting someone on foot bites (survival's
+  cablebot bite melee, `BUNNY_BITE_DAMAGE`) and bounces it back off.
+- **Latching**: the unit is destroyed and a part (`BunnyLatched`,
+  `obj_pacificscrap_bunnylatched`: a tiny hidden core mesh, 0.5 m collision box)
+  is made on the body of the block it hit with `body:createPart` (forced),
+  `BUNNY_LATCH_SINK` out from the surface so it goes a little into that block.
+  It has to: a part that only touches the car isn't counted as connected and
+  is split straight off (it then turns back into a bunny). The part draws the
+  ball. So it rides along with
+  the car for free, a hammer or gun pops it, and if the block it's on is removed
+  it's left on its own body and turns back into a bunny. They're popped off
+  before a gateway or junction portal (`Game.sv_popBunnies`), and any that got
+  out of the zone anyway pop themselves. At most `BUNNY_MAX_PER_CAR`,
+  counted from the parts on the car; past that a pounce just bounces off.
+- **Dragging**: every tick a latched bunny pushes the car's heaviest body (its
+  chassis) against the way it's going (flat), slowing it by `BUNNY_DRAG_BASE`
+  plus `BUNNY_DRAG` × its speed (m/s², times the whole car's mass): more bunnies slow the car more, faster driving is dragged
+  harder. (Pushing at the bunny's own spot felt random: on a wheel it pushes
+  against the spin and mostly cancels out.)
+- **Jolts**: every `BUNNY_JOLT_SECONDS` each latched bunny shoves the chassis
+  a random way (`BUNNY_JOLT` m/s, a little up) and twists it
+  (`BUNNY_JOLT_SPIN`). Their bursts elsewhere (`BunnyPuff`) are the glowgorp's
+  small goo splat tinted green: the trash ball's hit is huge and passing a
+  scale to `sm.effect.playEffect` didn't shrink it.
+- `Game.sv_popBunnies` only sends `sv_e_popBunnies` to the zone: the game
+  script can't touch bodies or play effects in a world ("Calling world
+  dependent functions in a no world script"), and doing it there once broke
+  the gateway halfway through.
+- Units can't be stuck to a body or moved directly, which is why a latched
+  bunny is a part rather than a unit. The grid spot is worked out from
+  `body.worldPosition` (taken as the body's grid origin): the latch log line
+  says how far the part landed from where it was meant to.
+
 ### Collapsed junctions
 
 `node.collapsed` changes every time you come home (`sv_jmRollCollapses`, called

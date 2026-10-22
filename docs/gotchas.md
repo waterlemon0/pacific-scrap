@@ -76,6 +76,13 @@ Read this before changing world, portal or save code.
   `sm.game.getRecipesEnabled()`) **crashes the game**. A new game doesn't show
   it. Only swap functions in patch code; call game functions inside the swapped
   functions, when they're used.
+- The game script has no world: it can read bodies in a world
+  (`sm.body.getAllBodies( zone )`), but playing an effect or destroying a shape
+  from it errors ("Calling world dependent functions in a no world script") and
+  stops the function there. That once left the gateway half-done. Send an event
+  to the world (`sm.event.sendToWorld`) and do it in the world script.
+- Each script has its own globals: a global set in a world script isn't seen by
+  a unit or part script (the bunnies' per-car count had to move for this).
 - Survival keeps some tables in locals, so to change behaviour we swap whole
   functions for patched copies (`survival_patches.lua`), re-applied every
   second in case Survival reloads its classes.

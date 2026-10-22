@@ -272,6 +272,34 @@
 			"uuid": "c1d2e3f4-a5b6-4c7d-8e9f-a0b1c2d3e4f5"
 		},
 		{
+			"//": "A bunny latched onto a car (Scripts/Bunny.lua, BunnyLatched): a small hidden core; the trash ball is drawn on it",
+			"color": "6b8e23",
+			"flammable": false,
+			"name": "obj_pacificscrap_bunnylatched",
+			"physicsMaterial": "Plastic",
+			"ratings": { "buoyancy": 5, "density": 1, "durability": 1, "friction": 3 },
+			"renderable": "$CONTENT_DATA/Objects/Renderable/obj_pacificscrap_bunnycore.rend",
+			"restrictions": {
+				"usable": false,
+				"erasable": false,
+				"liftable": false,
+				"destructable": false,
+				"convertibleToDynamic": false,
+				"buildable": false,
+				"connectable": false,
+				"paintable": false
+			},
+			"rotationSet": "PropZY",
+			"scripted": {
+				"classname": "BunnyLatched",
+				"filename": "$CONTENT_DATA/Scripts/Bunny.lua"
+			},
+			"showInInventory": false,
+			"stackSize": 1,
+			"uuid": "2c8f4e61-7a3b-4d95-b1e0-5f9a6c3d8e72",
+			"box": { "x": 2, "y": 2, "z": 2 }
+		},
+		{
 			"color": "e8811c",
 			"flammable": false,
 			"name": "obj_pacificscrap_supplypod",

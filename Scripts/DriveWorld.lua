@@ -2,6 +2,7 @@ dofile( "$SURVIVAL_DATA/Scripts/game/worlds/Overworld.lua" )
 dofile( "$CONTENT_DATA/Scripts/layouts.lua" )
 dofile( "$CONTENT_DATA/Scripts/survival_patches.lua" )
 dofile( "$CONTENT_DATA/Scripts/ZoneTornadoes.lua" )
+dofile( "$CONTENT_DATA/Scripts/ZoneBunnies.lua" )
 
 -- Visuals are glowing laser-hologram spheres (Effects/Renderable/*.rend, built on
 -- the plasma drill's sphere mesh). Scaled unevenly they make orbs, beams, discs
@@ -938,6 +939,7 @@ function ZoneWorld.sv_startTrip( self, trip )
 	end
 	saved.tripCells = {}
 	saved.spots = nil -- (where players were, for towing: this trip's only)
+	self.sv.lastCars = nil -- (the cars they drove, followed for towing: this trip's only)
 	saved.entryJunction = nil
 	-- Retired after an earlier trip: awake again
 	if saved.retired then
@@ -978,6 +980,7 @@ local function LeftoverLists()
 	LEFTOVER_SHAPES["7de73157-8f20-4fe6-9514-299fc166aaf7"] = true -- supply pod
 	for _, anchor in ipairs( ENERGY_ANCHORS ) do LEFTOVER_SHAPES[anchor.uuid] = true end
 	LEFTOVER_UNITS["9360d346-3ff2-4925-a068-660cf5dd5267"] = true -- red totebot (Minefield)
+	LEFTOVER_UNITS[tostring( BUNNY_UNIT_UUID )] = true -- bunnies
 	for _, tier in ipairs( ZONE_TIERS ) do
 		for _, unit in ipairs( tier.enemies and tier.enemies.units or {} ) do LEFTOVER_UNITS[unit[1]] = true end
 	end
@@ -1036,6 +1039,7 @@ function ZoneWorld.sv_tripCell( self, x, y )
 	if self:sv_anyPlayerHere() then
 		self:sv_spawnMines( x, y )
 		self:sv_spawnEnemies( x, y )
+		ZoneBunnies_SvSpawnCell( self, x, y, self:sv_trip().zone or self:sv_trip().depth )
 	end
 	-- A collapsed zone: supply pods lie about
 	if self:sv_trip().collapsed and not saved.retired and math.random() < COLLAPSED_POD_CHANCE then
@@ -1332,13 +1336,24 @@ function ZoneWorld.sv_trackSpots( self )
 			end
 			local ok, seat = pcall( function() return character:getLockingInteractable() end )
 			if ok and seat and sm.exists( seat ) and seat.shape.body:isDynamic() then
-				local car = seat.shape.body.worldPosition
-				if not spot.vehicle or ( spot.vehicle - car ):length() > 5 then
-					spot.vehicle = car
-					changed = true
-				end
+				self.sv.lastCars = self.sv.lastCars or {}
+				self.sv.lastCars[key] = seat.shape.body
 			end
 			spots[key] = spot
+		end
+	end
+	-- The last car each player drove, followed wherever it goes while it's
+	-- loaded, driver in it or not (thrown out and the car carried off by a
+	-- tornado, say). Not saved: after a reload it's where it was last seen.
+	for key, body in pairs( self.sv.lastCars or {} ) do
+		if sm.exists( body ) and body:getWorld() == self.world then
+			local spot = spots[key] or {}
+			local car = body.worldPosition
+			if not spot.vehicle or ( spot.vehicle - car ):length() > 5 then
+				spot.vehicle = car
+				spots[key] = spot
+				changed = true
+			end
 		end
 	end
 	-- Cars with an ARC Device on them, wherever their driver is (towed home
@@ -1389,8 +1404,16 @@ function ZoneWorld.sv_e_findRecoverables( self, params )
 			end
 		end
 	end
-	self.sv.recover = { spots = spots, handles = handles, findTick = sm.game.getCurrentTick() + 80, releaseTick = sm.game.getCurrentTick() + 40 * 12, partial = only ~= nil, player = only }
+	self.sv.recover = { spots = spots, handles = handles, findTick = sm.game.getCurrentTick() + 80, releaseTick = sm.game.getCurrentTick() + 40 * 20, partial = only ~= nil, player = only, tries = 0 } -- (held long enough for the tow portals' own waiting: Game.sv_towTransfer)
 end
+
+-- The cells round the spots load back in when the tow starts (nobody's in the
+-- zone any more, so they'd unloaded). In a big save that can take a while: a
+-- car still loading isn't there yet. So with no car found it looks again,
+-- every RECOVER_RETRY_TICKS, up to RECOVER_TRIES times.
+local RECOVER_RETRY_TICKS = 80
+local RECOVER_TRIES = 6
+local RECOVER_CAR_SHAPES = 6 -- (a creation this big is a car, as Game's CAR_MIN_SHAPES)
 
 function ZoneWorld.sv_stepRecover( self )
 	local recover = self.sv.recover
@@ -1450,6 +1473,19 @@ function ZoneWorld.sv_stepRecover( self )
 					end
 				end
 			end
+		end
+		local car = false
+		for _, item in ipairs( items ) do
+			if item.shapes >= RECOVER_CAR_SHAPES then car = true end
+		end
+		recover.tries = recover.tries + 1
+		if not car and recover.tries < RECOVER_TRIES then
+			recover.findTick = tick + RECOVER_RETRY_TICKS
+			recover.releaseTick = math.max( recover.releaseTick, tick + RECOVER_RETRY_TICKS + 40 * 10 )
+			return
+		end
+		if recover.tries > 1 then
+			sm.log.info( "[PacificScrap] Towing: looked", recover.tries, "times while the zone loaded back in", car and "(found a car)" or "(no car)" )
 		end
 		sm.event.sendToGame( "sv_e_recoverFound", { items = items, partial = recover.partial } )
 	end
@@ -1937,6 +1973,37 @@ function ZoneWorld.cl_n_setConditions( self, conditions )
 	if HasCondition( conditions, "fog" ) and ZONE_RENDER_SETTINGS and AddWorldRenderSettings then
 		AddWorldRenderSettings( self.world, ZONE_RENDER_SETTINGS, 2 )
 	end
+end
+
+-- The ground below a point (and what it is), for ZoneBunnies.lua
+function ZoneWorld.sv_groundBelow( self, from, distance )
+	return GroundBelow( from, distance, LANDING_MASK )
+end
+
+-- Before a gateway or junction portal (Game.sv_popBunnies): bunnies stuck to
+-- cars near it pop off
+local BUNNY_PART = sm.uuid.new( "2c8f4e61-7a3b-4d95-b1e0-5f9a6c3d8e72" )
+function ZoneWorld.sv_e_popBunnies( self, params )
+	local popped = 0
+	for _, body in ipairs( sm.body.getAllBodies( self.world ) ) do
+		if sm.exists( body ) and DistanceXY( body.worldPosition, params.center ) < params.radius then
+			for _, shape in ipairs( body:getShapes() ) do
+				if shape.uuid == BUNNY_PART then
+					BunnyPuff( shape.worldPosition )
+					shape:destroyShape()
+					popped = popped + 1
+				end
+			end
+		end
+	end
+	if popped > 0 then
+		sm.log.info( "[PacificScrap] Popped", popped, "bunnies off before the portal" )
+	end
+end
+
+-- /bunnies (Game.lua)
+function ZoneWorld.sv_e_spawnBunnies( self, params )
+	ZoneBunnies_SvSpawnNear( self, params.player )
 end
 
 function ZoneWorld.cl_n_setTornadoes( self, list )

@@ -1,0 +1,17 @@
+{
+	"lodList": [
+		{
+			"mesh": "$CONTENT_DATA/Objects/Mesh/obj_pacificscrap_bunnycore.fbx",
+			"subMeshMap": {
+				"bunnycore": {
+					"material": "DifAsgNor",
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Effects/Textures/effectproxies/effectproxies_trashballl_dif.tga",
+						"asg": "$SURVIVAL_DATA/Effects/Textures/effectproxies/effectproxies_trashballl_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Effects/Textures/effectproxies/effectproxies_trashballl_nor.tga"
+					}
+				}
+			}
+		}
+	]
+}

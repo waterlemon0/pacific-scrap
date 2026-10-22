@@ -177,6 +177,19 @@ with `sv_endRun( true )`:
   dropped items) and sends them to `Game.sv_e_recoverFound`, which portals them
   to the garage exit side by side (`RECOVER_SPACING`). No message: like Pacific
   Drive, your car just turns up at home.
+  - The car spot follows the last car each player drove (`self.sv.lastCars`,
+    not saved) while it's loaded, driver in it or not: a car carried off by a
+    tornado after its driver was thrown out was once left behind.
+  - With no car found it looks again every 2 s, up to 6 times: in a big save
+    the cells load back in slowly ("save was paused for too long" in the log),
+    and a player's tow once found only one stray body of a 20-body car.
+  - Each tow portal waits until it has something in it (`Game.sv_towTransfer`,
+    every second, up to 8 s): another player's tow found all 7 creations but
+    moved nothing, seven empty portals, as they hadn't loaded in yet. The
+    portals go one after another, so something inside two of the boxes only
+    moves once (it was in two at once in a log: a copy risk).
+  - Survival's lost-items marker isn't tied to a world: it shows the spot in
+    whatever zone you're in, though the bag is in the zone you died in.
 - No junction is unlocked.
 
 ## Resuming a saved run

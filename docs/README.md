@@ -91,6 +91,8 @@ other files add to the same `Game` class or are loaded by the world scripts.
 | `FriendlyDumpster.lua` | Garage loot box, refills after each trip. |
 | `FuelPump.lua` | Garage gas canister dispenser. |
 | `ZoneTornadoes.lua` | Survival's tornadoes, running in the zone. |
+| `Bunny.lua` | A bunny: chases a driven car, circles it, latches on (unit and character). |
+| `ZoneBunnies.lua` | Puts bunny groups in zone cells; draws the latched ones on cars. |
 | `StoryQuests.lua`, `Zone*Quest.lua` | Quest objects: they only mirror text the game script publishes onto the HUD tracker. |
 | `Player.lua` | Survival player plus loading blueprints onto the lift. |
 | `wide_gui.lua` | Stretches the Hideout-style menu across the screen (Fabricator, map). |

@@ -374,6 +374,49 @@ ZONE_ENEMY_SAFE_DISTANCE = 110 -- robots never appear this close to a player
 ZONE_ARRIVAL_CLEAR_RADIUS = 100 -- metres
 ZONE_ARRIVAL_CLEAR_SECONDS = 15
 
+-- Bunnies (Bunny.lua, ZoneBunnies.lua): groups of little junk balls that chase
+-- you (driving or on foot), swirl round you, then pounce: onto the car they
+-- latch on, on foot they bite
+BUNNY_CELL_CHANCE = { 0.12, 0.2, 0.28 } -- chance of a group in a cell, by zone tier (outer, mid, deep)
+BUNNY_GROUP_SIZE = { 2, 4 }
+BUNNY_SAFE_DISTANCE = 60      -- metres: never put down this close to a player
+BUNNY_NOTICE_RADIUS = 35      -- metres: someone this close (driving or on foot) starts the chase
+BUNNY_GIVE_UP_DISTANCE = 90   -- metres: a car this far ahead got away
+BUNNY_CHASE_SECONDS = { 7, 13 } -- how long their circle takes to close in on a car (random in this range)
+BUNNY_FOOT_CHASE_SECONDS = { 3, 6 } -- ...and on someone on foot
+BUNNY_LEAP_FROM = 0.6         -- they start pouncing this far into the chase (0 to 1)
+BUNNY_LEAP_RANGE = 14         -- metres from the car's edge they pounce from (at most)
+BUNNY_LEAP_HEIGHT = 1.8       -- metres a pounce arcs up (higher = longer in the air, easier to dodge): they aim at where you'll be when they come down
+BUNNY_MISS_SECONDS = 1.2      -- seconds on the ground after a miss
+BUNNY_LEAP_COOLDOWN_TICKS = { 20, 80 } -- and then this long more before the next pounce (ticks, random)
+BUNNY_ORBIT_START = 14        -- metres: the widest they circle the car at the start
+BUNNY_SWIRL = 1.4             -- how fast they circle round it (radians a second)
+BUNNY_CATCH_UP = 5            -- m/s: at most this much faster than the car, so they creep up
+BUNNY_MAX_SPEED = 30          -- m/s: a car faster than this outruns them (the character's sprintSpeed)
+BUNNY_HOP = 8                 -- how high they hop
+BUNNY_HOP_TICKS = { 15, 35 }  -- ticks between hops while chasing (random)
+BUNNY_LATCH_GAP = 0.6         -- metres outside the car's box their circle ends
+BUNNY_LATCH_DISTANCE = 1.0    -- metres from the car's surface a pouncing one latches from
+BUNNY_LATCH_SINK = 0.15       -- metres out from the car's surface a latched one's part sits (its middle; it's 0.5 m across, so it goes a little into the block: it must, to count as connected)
+BUNNY_BITE_DAMAGE = 3         -- a bite on someone on foot
+BUNNY_BITE_KNOCKBACK = 300
+BUNNY_BITE_RECOVER_SECONDS = 4 -- seconds before a bunny that bit comes again
+BUNNY_MAX_PER_CAR = 6         -- (counted from the bunny parts on the car)
+BUNNY_DRAG_BASE = 1.0         -- each latched one slows a moving car by this much (m/s²) whatever its speed...
+BUNNY_DRAG = 0.15             -- ...plus this much a second per m/s it's going (at 20 m/s: 1 + 3 = 4 m/s² each)
+BUNNY_JOLT_SECONDS = { 2, 4 } -- every this often (random) each latched one gives the car a shove or tug...
+BUNNY_JOLT = 4                -- ...this hard (m/s it changes the car's speed by, in a random direction)...
+BUNNY_JOLT_SPIN = 1.5         -- ...and twists it round this much
+BUNNY_PUFF_COLOR = sm.color.new( 0.45, 0.8, 0.2 ) -- their burst (a small goo splat, tinted green)
+BUNNY_BALL_SCALE = 0.1        -- the trash ball drawn this big (survival's trash ball is 0.25)
+BUNNY_BALL_UUID = sm.uuid.new( "d76d0639-4b04-4fb2-8338-ff4f7bde5ea0" ) -- (survival's green trash ball renderable)
+
+-- A bunny's burst: a small goo splat (the glowgorp's, tinted green). The
+-- trash ball's own hit is made for the big ball, and effects can't be scaled.
+function BunnyPuff( position )
+	sm.effect.playEffect( "Glowgorp - Destruct", position, nil, nil, nil, { Color = BUNNY_PUFF_COLOR } )
+end
+
 -- The tier (and its index) a junction depth is in. g_testTier (the /testtier
 -- cheat, Game.lua) makes every zone count as that tier.
 function ZoneTierOf( depth )

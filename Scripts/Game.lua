@@ -676,9 +676,28 @@ function Game.sv_towToGarage( self, zone, items, firstSlot )
 		local portal = sm.portal.createPortal( item.half )
 		portal:setOpeningA( item.center, sm.quat.identity(), zone )
 		portal:setOpeningB( out, sm.quat.identity(), self.sv.saved.overworld )
-		self:sv_after( 3, function() if sm.exists( portal ) then portal:transferAToB() end end )
-		self:sv_releaseLater( 60, nil, portal )
+		-- (one after another, not all at once: something in two of the boxes
+		-- goes with the first, so it isn't moved twice and copied)
+		self:sv_after( 3 + ( n - 1 ) * 4, function() self:sv_towTransfer( portal, 0 ) end )
 	end
+end
+
+-- A tow portal goes once it has something in it. In a big save the zone's
+-- cells are slow to load back in and a portal can see nothing yet (a player's
+-- tow once moved nothing at all, seven empty portals): it looks again every
+-- second, up to TOW_TRIES times, before going anyway.
+local TOW_TRIES = 8
+function Game.sv_towTransfer( self, portal, tries )
+	if not sm.exists( portal ) then return end
+	if #portal:getContentsA() == 0 and tries < TOW_TRIES then
+		self:sv_after( 40, function() self:sv_towTransfer( portal, tries + 1 ) end )
+		return
+	end
+	if tries > 0 then
+		sm.log.info( "[PacificScrap] Tow portal waited", tries, "s for its creation to load,", #portal:getContentsA() > 0 and "then went" or "and found nothing" )
+	end
+	portal:transferAToB()
+	self:sv_releaseLater( 60, nil, portal )
 end
 
 -- A creation as something to tow: the box round all its bodies (marked in seen)
@@ -1208,6 +1227,7 @@ function Game.sv_e_zoneJunction( self, params )
 	self:sv_pickLanding()
 	run.travellers = self:sv_playersInBox( run.oldZone, center, JUNCTION_PORTAL_HALF_SIZE )
 	run.carried = self:sv_prepareCarried( run.travellers, run.oldZone )
+	self:sv_popBunnies( run.oldZone, center, JUNCTION_PORTAL_HALF_SIZE.x + 10 )
 	self:sv_fade( run.travellers, true )
 	self:sv_broadcast( "Heading to junction " .. destination.id .. " at depth " .. depth .. " (" .. tostring( self.sv.saved.biome ) .. ")" )
 	run.timer = DEPART_DELAY_TICKS
@@ -1730,6 +1750,17 @@ end
 
 -- Return: gateway -> garage ---------------------------------------------------
 
+-- Bunnies stuck to a car (Bunny.lua, BunnyLatched) don't come through a
+-- gateway or junction: they pop off it first (a part forced into the car's
+-- blocks is best kept out of portals, and bunnies belong to the zone). The
+-- zone world does it (ZoneWorld.sv_e_popBunnies): the game script can't touch
+-- things in a world itself, and the portal goes a few ticks later anyway.
+function Game.sv_popBunnies( self, world, center, radius )
+	if world and sm.exists( world ) then
+		sm.event.sendToWorld( world, "sv_e_popBunnies", { center = center, radius = radius } )
+	end
+end
+
 function Game.sv_e_onGatewayReached( self, params )
 	local run = self.sv.run
 	if run.state ~= "inZone" or not run.gateway then
@@ -1743,6 +1774,7 @@ function Game.sv_e_onGatewayReached( self, params )
 		return
 	end
 	run.state = "returning"
+	self:sv_popBunnies( self.sv.saved.zone, run.gatewayCenter, RETURN_GATHER_RADIUS + 10 )
 
 	if not run.garageHandle then
 		-- Run was resumed from a save
@@ -1967,6 +1999,7 @@ function Game.client_onCreate( self )
 	sm.game.bindChatCommand( "/dumpster", {}, "cl_onChatCommand", "Cheat: puts a Friendly Dumpster in front of you, ready to open" )
 	sm.game.bindChatCommand( "/fuelpump", {}, "cl_onChatCommand", "Cheat: puts the garage's Fuel Pump back on its spot (or a new one there if there's none)" )
 	sm.game.bindChatCommand( "/supplypod", {}, "cl_onChatCommand", "Cheat: in a zone, drops a supply pod somewhere near you" )
+	sm.game.bindChatCommand( "/bunnies", {}, "cl_onChatCommand", "Cheat: in a zone, puts a group of bunnies a little way ahead of you" )
 	sm.game.bindChatCommand( "/testtier", { { "string", "tier", true } }, "cl_onChatCommand", "Debug: new zones count as this tier (outer, mid, deep: its look, robots, missiles, pods); no name = normal" )
 	sm.game.bindChatCommand( "/liftblueprints", {}, "cl_onChatCommand", "Cheat: turns loading blueprints onto the lift (hold the lift, press E) on or off for this save" )
 end
@@ -2094,6 +2127,12 @@ function Game.sv_onChatCommand( self, params, player )
 			self:sv_dropPod()
 		else
 			self:sv_message( player, "Supply pods only come down in the zone." )
+		end
+	elseif params[1] == "/bunnies" then
+		if self.sv.run.state == "inZone" and self.sv.saved.zone then
+			sm.event.sendToWorld( self.sv.saved.zone, "sv_e_spawnBunnies", { player = player } )
+		else
+			self:sv_message( player, "Bunnies only live in the zone." )
 		end
 	elseif params[1] == "/liftblueprints" then
 		g_liftBlueprints = not g_liftBlueprints

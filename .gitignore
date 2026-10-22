@@ -1,0 +1,9 @@
+# Rebuilt by the game on every launch (and must be cleared after changes)
+Cache/
+
+# Python leftovers from the tools
+__pycache__/
+*.pyc
+
+# Blender backups
+*.blend1

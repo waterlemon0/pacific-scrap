@@ -1,0 +1,99 @@
+{
+	"lodList": [
+		{
+			"mesh": "$SURVIVAL_DATA/Effects/Meshes/hologram_refresh_scanplane.fbx",
+			"minViewSize": 0,
+			"subMeshMap": {
+				"material": {
+					"custom": {
+						"laser": {
+							"baseColor": [
+								1.0,
+								0.42,
+								0.05,
+								0.25
+							],
+							"fade": {
+								"fadeRange": 1.0,
+								"fadeValue": 0.0
+							},
+							"fog": {
+								"fogLoopSpeed": 1.0,
+								"fogMin": 0.379999995,
+								"fogOpacity": 0.400000006,
+								"fogScale": 6.150000095,
+								"fogScrollSpeed": 0.100000001
+							},
+							"fresnel": {
+								"fresnelExponent": 1.0,
+								"fresnelIntensity": 0.0
+							},
+							"glowStrength": 0.15,
+							"highlightColor": [
+								1.0,
+								0.55,
+								0.15,
+								0.55
+							],
+							"intersection": {
+								"intersectHeight": 0.100000001,
+								"intersectIntensity": 1.320000052
+							},
+							"scanLines": {
+								"scanLineFrequency1": 100.0,
+								"scanLineFrequency2": 27.459999084,
+								"scanLineIntensity1": 0.029999999,
+								"scanLineIntensity2": 0.01,
+								"scanLineSpeed1": 0.200000003,
+								"scanLineSpeed2": 0.100000001
+							}
+						},
+						"laserDisplacement": {
+							"color": [
+								1.0,
+								0.45,
+								0.05,
+								1.0
+							],
+							"fade": {
+								"displacementFadeRange": 1.0,
+								"displacementFadeValue": 1.0
+							},
+							"flicker": {
+								"flickerFrequencyOffset": 1.0,
+								"flickerFrequencyValue": 10.0
+							},
+							"glitch": {
+								"speed": 1.0
+							},
+							"slice": {
+								"direction": [
+									1.0,
+									0.0,
+									0.0
+								],
+								"sliceSize": 0.25
+							},
+							"speed": 0.5,
+							"strength": 0.5,
+							"wave": {
+								"noiseIntensity": 1.0
+							}
+						},
+						"scrollUv": {
+							"speed": [
+								-0.100000001,
+								0.0
+							]
+						}
+					},
+					"material": "Laser_hologramblock",
+					"textures": {
+						"laser": "$SURVIVAL_DATA/Effects/Textures/effectproxies/eff_hologram_blocker_stripes_dif.tga",
+						"laserMask": "$SURVIVAL_DATA/Effects/Textures/effectproxies/eff_hologram_blocker_stripes_dif.tga"
+					}
+				}
+			}
+		}
+	]
+}

@@ -1,0 +1,56 @@
+{
+	"lodList": [
+		{
+			"mesh": "$CONTENT_DATA/Objects/Mesh/obj_pacificscrap_fuelpump.fbx",
+			"subMeshMap": {
+				"fuelpump_m00_containerbattery": {
+					"material": "DifAsgNor_Metal",
+					"custom": {
+						"metalProfile": "DifAsgNor_Painted"
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_battery_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_battery_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_battery_nor.tga"
+					}
+				},
+				"fuelpump_m01_containergas": {
+					"material": "DifAsgNor_Metal",
+					"custom": {
+						"metalProfile": "DifAsgNor_Painted"
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_gas_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_gas_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_gas_nor.tga"
+					}
+				},
+				"fuelpump_m02_connectionpoint": {
+					"material": "DifAsgNor_Metal",
+					"custom": {
+						"metalProfile": "DifAsgNor_LowReflection"
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/containers/obj_interactive_container_connectorpoint_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/containers/obj_interactive_container_connectorpoint_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Objects/Textures/containers/obj_interactive_container_connectorpoint_nor.tga"
+					}
+				},
+				"fuelpump_m03_screen": {
+					"material": "UVAnimDifAsgNor",
+					"custom": {
+						"uv0": {
+							"u": 1.0,
+							"v": 0.166999996
+						}
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_screen_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_screen_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_screen_nor.tga"
+					}
+				}
+			}
+		}
+	]
+}

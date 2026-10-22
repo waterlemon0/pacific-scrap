@@ -1,0 +1,154 @@
+{
+	"scriptableObjectList": [
+		{
+			"classname": "ZoneRunQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "Into the Zone"
+			},
+			"filename": "$CONTENT_DATA/Scripts/ZoneRunQuest.lua",
+			"name": "quest_zone_run",
+			"uuid": "91ad5ff8-e14f-475d-987b-54a5c68fec29"
+		},
+		{
+			"classname": "ZoneAnchorsQuest",
+			"data": {
+				"mainQuest": false,
+				"title": "Energy Anchors"
+			},
+			"filename": "$CONTENT_DATA/Scripts/ZoneAnchorsQuest.lua",
+			"name": "quest_zone_anchors",
+			"uuid": "83cf70ec-adf4-48a3-89d4-30ad17562ec3"
+		},
+		{
+			"classname": "ZoneConditionsQuest",
+			"data": {
+				"mainQuest": false,
+				"title": "Junction Conditions"
+			},
+			"filename": "$CONTENT_DATA/Scripts/ZoneConditionsQuest.lua",
+			"name": "quest_zone_conditions",
+			"uuid": "4f2b8c6e-1d3a-4e7f-9b25-c8a6d0e3f417"
+		},
+		{
+			"classname": "StoryFirstGatewayQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "Into the Zone"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_first_gateway",
+			"uuid": "bbadb839-dff7-4c03-a46f-0555a9c03160"
+		},
+		{
+			"classname": "StoryOuterZoneQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "The Outer Zone"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_outer",
+			"uuid": "0130e643-099a-4680-b3af-fc182ee2f59b"
+		},
+		{
+			"classname": "StoryMidZoneQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "The Mid Zone"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_mid",
+			"uuid": "eb743495-d974-453c-ae8b-4d8c3ea17a19"
+		},
+		{
+			"classname": "StoryDeepZoneQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "The Deep Zone"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_deep",
+			"uuid": "9c31665f-e0d5-4d78-a4c3-a2d9db7f8440"
+		},
+		{
+			"classname": "StoryGettingStartedQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "Getting Started"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_getting_started",
+			"uuid": "3b8e5f12-7a4c-4d91-a6e2-0c9f1b7d5e38"
+		},
+		{
+			"classname": "ExpeditionChecklistQuest",
+			"data": {
+				"mainQuest": false,
+				"title": "Expedition Checklist"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_expedition_checklist",
+			"uuid": "6db1ccac-1e6e-45f0-ad8e-b437e4ae372c"
+		},
+		{
+			"classname": "StoryCraftbotQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "Craftbot Online"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_craftbot",
+			"uuid": "fa2d0997-83a5-4e3a-aa7e-b4a6a5324036"
+		},
+		{
+			"classname": "StoryArmingQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "Gearing Up"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_arming",
+			"uuid": "edf6d831-43ee-408e-b9c7-99b5af7532a1"
+		},
+		{
+			"classname": "StoryAntennaQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "Raise the Antenna"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_antenna",
+			"uuid": "5cf8f169-6ede-4b2f-8dc8-dfb1d5090b24"
+		},
+		{
+			"classname": "StoryHideoutQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "Distress Call"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_hideout",
+			"uuid": "5ae26f1a-9b92-486d-bf25-b12fb8fe2706"
+		},
+		{
+			"classname": "StoryFarmersQuest",
+			"data": {
+				"mainQuest": true,
+				"title": "Roadside Picnic"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_farmers",
+			"uuid": "f73539b7-fd8c-4d85-973c-62eb25b4e218"
+		},
+		{
+			"classname": "StoryAntenna2Quest",
+			"data": {
+				"mainQuest": true,
+				"title": "Boost the Signal"
+			},
+			"filename": "$CONTENT_DATA/Scripts/StoryQuests.lua",
+			"name": "quest_story_antenna2",
+			"uuid": "3f9d6b2e-8c41-4a7e-b5d0-2e6a1c9f7b34"
+		}
+	]
+}

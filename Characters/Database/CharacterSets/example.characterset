@@ -1,0 +1,44 @@
+{
+	"characters": [
+		{
+			"//": "The farmer at the Farmers' Hideout you talk to (Scripts/HideoutFarmer.lua): survival's builder farmer's look",
+			"capsule": { "crouchHeight": 0.8, "height": 1.4, "radius": 0.3 },
+			"character": {
+				"data": {},
+				"scriptClass": "HideoutFarmerCharacter",
+				"scriptPath": "$CONTENT_DATA/Scripts/HideoutFarmer.lua"
+			},
+			"hit": {
+				"crouch": { "col": "$SURVIVAL_DATA/Character/Char_Male/char_male_hit_crouch_col.obj", "offset": [ 0.0, 0.0, 0.4 ] },
+				"stand": { "col": "$SURVIVAL_DATA/Character/Char_Male/char_male_hit_stand_col.obj", "offset": [ 0.0, 0.0, 0.7 ] }
+			},
+			"mass": 120.0,
+			"material": "RagdollHuman",
+			"movement": {
+				"canSwim": true,
+				"crouchSpeed": 3.0,
+				"facingRotationSpeed": 3.1415,
+				"headingRotationSpeed": 3.1415,
+				"jumpImpulse": 7.0,
+				"moveSpeed": 4.0,
+				"slowDownSpeed": 2.5,
+				"sprintSpeed": 8.0,
+				"static": true
+			},
+			"name": "Hideout Farmer",
+			"ragdoll": "$SURVIVAL_DATA/Character/Char_Male/char_male_ragdoll.json",
+			"renderables": [
+				"$SURVIVAL_DATA/Character/Char_Male/Animations/char_male_tp_npc_builder.rend",
+				"$SURVIVAL_DATA/Character/Char_Farmer/char_farmer.rend"
+			],
+			"showInEditor": true,
+			"tumble": { "col": "$SURVIVAL_DATA/Character/Char_Male/char_male_col.obj", "offset": [ 0.0, 0.0, 0.683 ] },
+			"unit": {
+				"data": {},
+				"scriptClass": "HideoutFarmerUnit",
+				"scriptPath": "$CONTENT_DATA/Scripts/HideoutFarmer.lua"
+			},
+			"uuid": "e7342b5f-ed16-4adc-9f04-69b90aceff2b"
+		}
+	]
+}

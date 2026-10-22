@@ -1,0 +1,47 @@
+{
+	"c243bb55-92f9-4f77-bb2a-b7c87b5a2be9": {
+		"title": "Stable Energy Anchor",
+		"description": "A stable energy anchor pulled from the zone. Powers the ARC Device, and the Fabricator takes it as payment: carry it there and click to deposit."
+	},
+	"a6be2c12-f280-4d2b-b270-8e407813c28d": {
+		"description": "Holds an energy anchor in the zone.",
+		"title": "Anchor Pedestal"
+	},
+	"a6258a75-ea2b-47f7-acec-a3ace313bbd9": {
+		"title": "ARC Device",
+		"description": "Mount it on your car. Carry energy anchors to it and click to insert, then wire a button or switch to it to open a gateway out of the zone."
+	},
+	"e3473813-1984-4a22-9ef7-b1b9f735ccbf": {
+		"title": "Fuel Pump",
+		"description": "Gas for the car: 20 canisters every time you're back at the garage. Needs garage power."
+	},
+	"7ee97af5-72b9-4335-a3bd-e80d49dab105": {
+		"title": "Fabricator",
+		"description": "Place it in the garage. Spend component kits on upgrades to unlock new schematics for the Craftbot."
+	},
+	"e7a1c3d2-5b6f-4a8e-9c1d-2f3b4a5c6d7e": {
+		"title": "Unstable Energy Anchor",
+		"description": "An unstable energy anchor from deeper in the zone. Powers the ARC Device like any anchor; the Fabricator takes it for better upgrades."
+	},
+	"9b8c7d6e-1f2a-4b3c-8d4e-5f6a7b8c9d0e": {
+		"title": "Corrupted Energy Anchor",
+		"description": "A corrupted energy anchor from the deepest junctions. Powers the ARC Device like any anchor; the Fabricator takes it for its best upgrades."
+	},
+	"d0f1e2a3-b4c5-4d6e-8f70-81a2b3c4d5e6": {
+		"title": "Friendly Dumpster",
+		"description": "It refills after every trip into the zone. Open it for free supplies."
+	},
+	"c1d2e3f4-a5b6-4c7d-8e9f-a0b1c2d3e4f5": {
+		"title": "Route Planner",
+		"description": "Plan your trips into the zone: scan junctions, re-stabilize them and set a destination."
+	},
+	"7de73157-8f20-4fe6-9514-299fc166aaf7": {
+		"title": "Supply Pod",
+		"description": "Comes down while the zone collapses. Rarer supplies inside."
+	},
+	"e49b210a-0d46-4f06-bcd8-08862379d156": {
+		"title": "Mid Zone Key",
+		"upperCaseTitle": "MID ZONE KEY",
+		"description": "The farmers' key to the Mid Zone, for the food you brought them. Hold on to it: the junctions beyond the Outer Zone are open to you now."
+	}
+}

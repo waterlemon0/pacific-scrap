@@ -1,0 +1,150 @@
+{
+	"settings": {
+		"GI": {
+			"override": false,
+			"weight": 4.599999905
+		},
+		"LUT": {
+			"LUT": "Default",
+			"override": false
+		},
+		"camera_light": {
+			"color": [
+				0.92578125,
+				0.634214401,
+				0.459274292,
+				1.0
+			],
+			"color_mul": 0.529999971,
+			"far": {
+				"color": [
+					0.92578125,
+					0.634214401,
+					0.459274292,
+					1.0
+				],
+				"color_mul": 0.529999971,
+				"enable": false,
+				"intensity": 1.299999952,
+				"range": 16.0
+			},
+			"intensity": 1.440000057,
+			"override": false,
+			"range": 10.0
+		},
+		"fog": {
+			"end": 156.0,
+			"end_color": [
+				0.380392164,
+				0.450980395,
+				0.498039246,
+				0.5703125
+			],
+			"end_mul": 0.800000012,
+			"fade_distance": 96.0,
+			"falloff": 1.0,
+			"override": true,
+			"start": 16.0,
+			"start_color": [
+				0.3828125,
+				0.453308105,
+				0.5,
+				0.36328125
+			],
+			"start_mul": 0.800000012,
+			"vertical_fog": {
+				"end": 80.0,
+				"end_color": [
+					0.029754639,
+					0.07764101,
+					0.15234375,
+					0.41796875
+				],
+				"end_mul": 0.5,
+				"fade_distance": 64.0,
+				"falloff": 1.0,
+				"opacity": 0.689999998,
+				"start": 0.0,
+				"start_color": [
+					0.024169922,
+					0.2578125,
+					0.192100525,
+					0.734375
+				],
+				"start_mul": 0.800000012
+			}
+		},
+		"horizon_light": {
+			"bottom_color": [
+				0.196078449,
+				0.345098048,
+				0.298039228,
+				1.0
+			],
+			"bottom_intensity": 0.5,
+			"direction": [
+				0.0,
+				0.0,
+				0.0
+			],
+			"enable": false,
+			"end": 180.0,
+			"falloff": 2.0,
+			"middle_color": [
+				0.125490203,
+				0.309803933,
+				0.180392161,
+				1.0
+			],
+			"middle_intensity": 0.25,
+			"start": 0.0,
+			"top_color": [
+				0.313873291,
+				0.454048872,
+				0.47265625,
+				1.0
+			],
+			"top_intensity": 0.5
+		},
+		"reflection_color": {
+			"override": false,
+			"reflection_high": {
+				"max": 1.17,
+				"min": 1.02,
+				"mul": 1.191
+			},
+			"reflection_low": {
+				"max": 1.52,
+				"min": 1.12,
+				"mul": 1.13
+			},
+			"reflection_medium": {
+				"max": 1.52,
+				"min": 1.12,
+				"mul": 1.13
+			},
+			"reflection_off": {
+				"max": 1.25,
+				"min": 1.15,
+				"mul": 1.38
+			}
+		},
+		"volumetric_fog": {
+			"intensity": 0.850000024,
+			"loop_speed": 0.050000001,
+			"max": 0.699999988,
+			"min": 0.300000012,
+			"override": true,
+			"scale": [
+				0.150000006,
+				0.150000006,
+				0.150000006
+			],
+			"scroll_speed": [
+				0.100000001,
+				0.100000001,
+				0.100000001
+			]
+		}
+	}
+}

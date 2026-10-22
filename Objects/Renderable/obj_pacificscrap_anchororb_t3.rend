@@ -1,0 +1,123 @@
+{
+	"lodList" : 
+	[
+		{
+			"mesh" : "$CONTENT_DATA/Objects/Mesh/obj_pacificscrap_anchororb.fbx",
+			"minViewSize" : 85,
+			"subMeshMap" : 
+			{
+				"m_glass" : 
+				{
+					"material" : "Glass",
+					"textureList" : 
+					[
+						"$SURVIVAL_DATA/Textures/Tiled/General/t_tiled_basicglass_dif.tga",
+						"$SURVIVAL_DATA/Textures/Tiled/General/t_tiled_basicglass_asg.tga",
+						"$SURVIVAL_DATA/Textures/Tiled/General/t_tiled_spots_nor.tga"
+					]
+				},
+				"m_molten" : 
+				{
+					"custom" : 
+					{
+						"scrollUv" : 
+						{
+							"speed" : 
+							[
+								0.050000001,
+								0.050000001
+							]
+						}
+					},
+					"material" : "DifAsgNorScroll",
+					"textureList" : 
+					[
+						"$SURVIVAL_DATA/Textures/Matcap/t_matrixcrystal_mcap.tga",
+						"$SURVIVAL_DATA/Textures/Tiled/Lava/t_tiled_lava_asg.tga",
+						"$SURVIVAL_DATA/Textures/Tiled/Lava/t_tiled_lava_nor.tga"
+					]
+				},
+				"m_moltenorb" : 
+				{
+					"material" : "DifAsgNor_LightCap",
+					"textureList" : 
+					[
+						"$SURVIVAL_DATA/Objects/Textures/resource/obj_resource_moltenorb_dif.tga",
+						"$SURVIVAL_DATA/Objects/Textures/resource/obj_resource_moltenorb_asg.tga",
+						"$SURVIVAL_DATA/Objects/Textures/resource/obj_resource_moltenorb_nor.tga",
+						"",
+						"$SURVIVAL_DATA/Textures/Lightcap/t_moltenorb_rimlight_red_lcap.tga"
+					]
+				}
+			}
+		},
+		{
+			"mesh" : "$CONTENT_DATA/Objects/Mesh/obj_pacificscrap_anchororb_lod1.fbx",
+			"minViewSize" : 13,
+			"subMeshMap" : 
+			{
+				"m_molten" : 
+				{
+					"custom" : 
+					{
+						"scrollUv" : 
+						{
+							"speed" : 
+							[
+								0.050000001,
+								0.050000001
+							]
+						}
+					},
+					"material" : "DifAsgNorScroll",
+					"textureList" : 
+					[
+						"$SURVIVAL_DATA/Textures/Matcap/t_matrixcrystal_mcap.tga",
+						"$SURVIVAL_DATA/Textures/Tiled/Lava/t_tiled_lava_asg.tga",
+						"$SURVIVAL_DATA/Textures/Tiled/Lava/t_tiled_lava_nor.tga"
+					]
+				},
+				"m_moltenorb" : 
+				{
+					"material" : "DifAsgNor_LightCap",
+					"textureList" : 
+					[
+						"$SURVIVAL_DATA/Objects/Textures/resource/obj_resource_moltenorb_dif.tga",
+						"$SURVIVAL_DATA/Objects/Textures/resource/obj_resource_moltenorb_asg.tga",
+						"$SURVIVAL_DATA/Objects/Textures/resource/obj_resource_moltenorb_nor.tga",
+						"",
+						"$SURVIVAL_DATA/Textures/Lightcap/t_moltenorb_rimlight_red_lcap.tga"
+					]
+				}
+			}
+		},
+		{
+			"mesh" : "$CONTENT_DATA/Objects/Mesh/obj_pacificscrap_anchororb_lod2.fbx",
+			"subMeshMap" : 
+			{
+				"m_molten" : 
+				{
+					"material" : "DifAsg",
+					"textureList" : 
+					[
+						"$SURVIVAL_DATA/Textures/Matcap/t_matrixcrystal_mcap.tga",
+						"$SURVIVAL_DATA/Textures/Tiled/Lava/t_tiled_lava_asg.tga",
+						""
+					]
+				},
+				"m_moltenorb" : 
+				{
+					"material" : "DifAsgNor_LightCap",
+					"textureList" : 
+					[
+						"$SURVIVAL_DATA/Objects/Textures/resource/obj_resource_moltenorb_dif.tga",
+						"$SURVIVAL_DATA/Objects/Textures/resource/obj_resource_moltenorb_asg.tga",
+						"$SURVIVAL_DATA/Objects/Textures/resource/obj_resource_moltenorb_nor.tga",
+						"",
+						"$SURVIVAL_DATA/Textures/Lightcap/t_moltenorb_rimlight_red_lcap.tga"
+					]
+				}
+			}
+		}
+	]
+}

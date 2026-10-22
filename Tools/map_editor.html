@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Junction Map Editor</title>
+<!--
+	Pacific Scrap junction map editor. Open this file in a browser (Edge or
+	Chrome can save straight into the mod folder; others download the file).
+
+	Place junctions on the Route Planner picture, connect them into a tree from
+	the garage, and pick what kind each one is (or leave it Random). Save as
+	Maps/map_layout.json in the mod: a NEW save then uses this map
+	(JunctionMap.lua, MAP_LAYOUT_FILE). Delete the file to go back to random maps.
+
+	Coordinates are the game's map units: the garage at 0,0, the zone's core at
+	0,-2300 (towards the top of the picture). They must match JunctionMap.lua
+	(MAP_BOUNDS, MAP_CORE_RADIUS, MAP_DEPTH_STEP) and Gui/make_map.py.
+-->
+<style>
+:root {
+	--bg: #14181b; --panel: #1d2327; --panel2: #252c31; --line: #36414a;
+	--text: #e4e9ec; --muted: #8d9aa3; --accent: #5fd0c0; --warn: #f0b040; --bad: #f06a5a;
+	--outer: #6fcf6f; --mid: #e070b8; --deep: #b080f0; --garage: #ffffff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, "Segoe UI", sans-serif; }
+#app { display: flex; height: 100%; }
+#stage { flex: 1; position: relative; overflow: hidden; }
+canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+#status { position: absolute; left: 8px; bottom: 8px; background: rgba(0,0,0,.6); padding: 4px 8px; border-radius: 4px; color: var(--muted); pointer-events: none; }
+#mode { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); background: var(--warn); color: #000; padding: 4px 12px; border-radius: 4px; font-weight: 600; display: none; }
+#side { width: 330px; background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 12px; }
+h1 { font-size: 15px; margin: 0 0 8px; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 6px; }
+.row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; align-items: center; }
+button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; cursor: pointer; font: inherit; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: #062; border-color: var(--accent); font-weight: 600; }
+button.danger:hover { border-color: var(--bad); color: var(--bad); }
+label { display: block; color: var(--muted); margin: 6px 0 2px; }
+select, input[type=text] { width: 100%; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 4px 6px; font: inherit; }
+.conds { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; margin-top: 4px; }
+.conds label { display: flex; gap: 4px; align-items: center; margin: 0; color: var(--text); }
+.info { background: var(--panel2); border-radius: 4px; padding: 6px 8px; }
+.muted { color: var(--muted); }
+ul.warn { list-style: none; padding: 0; margin: 0; }
+ul.warn li { padding: 4px 6px; border-left: 3px solid var(--warn); background: var(--panel2); margin-bottom: 4px; border-radius: 0 4px 4px 0; }
+ul.warn li.bad { border-color: var(--bad); }
+ul.warn li.ok { border-color: var(--accent); }
+.help { color: var(--muted); font-size: 12px; }
+.help b { color: var(--text); font-weight: 600; }
+kbd { background: var(--panel2); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; font-size: 11px; }
+@media (max-width: 700px) {
+	#app { flex-direction: column; }
+	#side { width: 100%; height: 45%; border-left: 0; border-top: 1px solid var(--line); }
+}
+</style>
+</head>
+<body>
+<div id="app">
+	<div id="stage">
+		<canvas id="map"></canvas>
+		<div id="mode"></div>
+		<div id="status"></div>
+	</div>
+	<div id="side">
+		<h1>Junction Map Editor</h1>
+		<div class="row">
+			<button class="primary" id="btnSave" title="Ctrl+S">Save</button>
+			<button id="btnSaveAs">Save as…</button>
+			<button id="btnOpen">Open…</button>
+			<button id="btnNew" class="danger">New</button>
+			<input type="file" id="fileInput" accept=".json,application/json" hidden>
+		</div>
+		<div class="help" id="saveInfo">Save as <b>Maps/map_layout.json</b> in the mod folder.</div>
+
+		<h2>Selected</h2>
+		<div id="selPanel"></div>
+
+		<h2>Checks</h2>
+		<ul class="warn" id="warnings"></ul>
+
+		<h2>How to use</h2>
+		<div class="help">
+			<b>Click empty map</b>: add a junction, its road coming from the selected one (the garage at first).<br>
+			<b>Click a junction</b>: select it. <b>Drag</b> it to move.<br>
+			<b>Right-drag</b> or <b>middle-drag</b>: pan. <b>Wheel</b>: zoom.<br>
+			<b>Connect to…</b>: then click the junction its road should come from.<br>
+			<b>Add road from…</b>: another junction's road also leads here, so roads merge (one way only, no loops).<br>
+			<kbd>Del</kbd> delete (what's beyond moves onto the one before) · <kbd>Ctrl+Z</kbd> undo · <kbd>Esc</kbd> cancel / select the garage.<br><br>
+			A junction's <b>number</b> (JCT 1, 2, 3...) is how many junctions along the road from the garage it is: deeper means harder (gateway cost, anchors, storms), and the story's goals go by it (escape at JCT 3, 6, 9). Its <b>zone</b> (colour) is the ring area it sits in: Outer, Mid or Deep (the solid rings are the borders), which sets its look, robots and when it unlocks.<br><br>
+			Anything left on <b>Random</b> is rolled by the game as usual. Past a junction with no roads on (unless it's a Dead end) the map goes on as a random one.<br><br>
+			A save made before the file existed keeps its random map: start a new save. Clear the game's Cache folder after saving.
+		</div>
+	</div>
+</div>
+
+<script>
+"use strict";
+
+// ---- Game constants (JunctionMap.lua, layouts.lua, conditions.lua) ----------
+const X0 = -1600, X1 = 1600, Y0 = -2900, Y1 = 300; // MAP_BOUNDS
+const CORE_RADIUS = 2300, DEPTH_STEP = 220;
+const CORE = { x: 0, y: -CORE_RADIUS };
+const TIERS = [
+	{ name: "Outer Zone", first: 1, last: 3, colour: "--outer" },
+	{ name: "Mid Zone", first: 4, last: 6, colour: "--mid" },
+	{ name: "Deep Zone", first: 7, last: Infinity, colour: "--deep" },
+];
+const KINDS = [
+	["random", "Random (rolled)"],
+	["normal", "Normal (a gateway can open)"],
+	["noExit", "No stable exits (drive through)"],
+	["collapsed", "Collapsed (drive through, storm on)"],
+	["deadEnd", "Dead end (no way on)"],
+];
+const BIOMES = [["", "Random (by depth)"], ["forest", "Forest"], ["autumn", "Autumn forest"], ["field", "Meadow"], ["burnt", "Burnt forest"], ["desert", "Desert"]];
+const LANDMARKS = [
+	{ name: "veg", title: "Vegetable Packing Station", code: "VP", depth: 2 },
+	{ name: "fruit", title: "Fruit Packing Station", code: "FP", depth: 2 },
+	{ name: "hideout", title: "Farmers' Hideout", code: "FH", depth: 2 },
+];
+const CONDITIONS = [
+	["stable", "Perpetual Stability"], ["unstable", "Elevated Instability"], ["rapid", "Rapid Collapse"],
+	["daylight", "Perpetual Daylight"], ["nightfall", "Nightfall"], ["rain", "Rainfall"],
+	["thunderstorm", "Electrical Storm"], ["acidRain", "Acid Rain"], ["minefield", "Minefield"],
+	["fog", "Dense Fog"], ["tornadoes", "Hurricane Squall"], ["anchorSurge", "Anchor Surge"], ["anchorDrought", "Anchor Drought"],
+];
+const MAP_NAMES = ["BACK ROADS", "TOWN CENTER", "FARMS", "TRAILER PARK", "LOGGING CAMP", "RESERVOIR", "RAIL YARD", "QUARRY"];
+const STORAGE_KEY = "pacificscrap-map-editor";
+const NODE_R = 9; // screen pixels
+
+// ---- State ------------------------------------------------------------------
+// junctions: { id, parent, x, y, code?, name?, kind?, biome?, landmark?, buildings?, conditions? }
+// The garage is id 1 at 0,0 and isn't in the list. Ids never change once given:
+// saves remember which layout junction each map junction is.
+let doc = { junctions: [], nextId: 2 };
+let selected = 1;
+let undoStack = [];
+let fileHandle = null;
+let connecting = false; // false, "parent" (Connect to…) or "also" (Add road from…)
+let dirty = false;
+
+const canvas = document.getElementById("map");
+const ctx = canvas.getContext("2d");
+const img = new Image();
+img.src = "../Gui/RouteMap.png";
+img.onload = draw;
+img.onerror = () => setStatus("Couldn't load ../Gui/RouteMap.png (open this file from the mod's Tools folder)");
+
+let view = { scale: 0.25, ox: 0, oy: 0 }; // screen = (map - origin) * scale
+
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function byId(id) { return id === 1 ? garage() : doc.junctions.find(j => j.id === id); }
+function garage() { return { id: 1, x: 0, y: 0, parent: null }; }
+// The junctions a road leads to from this one: its own roads, and roads that
+// merge into a junction (also: more roads in besides parent)
+function childrenOf(id) { return doc.junctions.filter(j => j.parent === id || (j.also || []).includes(id)); }
+function primaryChildren(id) { return doc.junctions.filter(j => j.parent === id); }
+function roadsInto(j) { return [j.parent, ...(j.also || [])]; }
+function allNodes() { return [garage(), ...doc.junctions]; }
+
+// A junction's number: how many junctions along the road from the garage it
+// is, the shortest way (hops in JunctionMap.lua); NaN when it's cut off
+function numberOf(j) {
+	const hops = { 1: 0 }, queue = [1];
+	while (queue.length) {
+		const id = queue.shift();
+		for (const c of childrenOf(id)) if (hops[c.id] === undefined) { hops[c.id] = hops[id] + 1; queue.push(c.id); }
+	}
+	return hops[j.id] === undefined ? NaN : hops[j.id];
+}
+// Its zone, as a depth inside that zone's range: the ring area it sits in,
+// with its number kept where it fits (ZoneDepthFor in JunctionMap.lua). The
+// colour and tier come from this. NaN when it's cut off from the garage
+function depthOf(j) {
+	if (!connected(j)) return NaN;
+	const n = numberOf(j);
+	if (isNaN(n)) return NaN;
+	const ring = ringAt(j.x, j.y);
+	const i = TIERS.indexOf(tierOf(ring));
+	const t = TIERS[i];
+	if (n < t.first) return t.first;
+	if (n > t.last && i < TIERS.length - 1) return t.last;
+	return n;
+}
+function connected(j) {
+	let walk = j, guard = 0;
+	while (walk && walk.id !== 1 && guard++ < 500) walk = byId(walk.parent);
+	return !!walk && walk.id === 1;
+}
+function tierOf(depth) { return TIERS.find(t => depth >= t.first && depth <= t.last) || TIERS[2]; }
+function ringRadius(d) { return d <= 9 ? CORE_RADIUS - DEPTH_STEP * d : (CORE_RADIUS - DEPTH_STEP * 9) * Math.pow(0.8, d - 9); }
+function ringAt(x, y) {
+	const r = Math.hypot(x - CORE.x, y - CORE.y);
+	let best = 1;
+	for (let d = 1; d <= 14; d++) if (Math.abs(r - ringRadius(d)) < Math.abs(r - ringRadius(best))) best = d;
+	return best;
+}
+
+// Codes like the game's map sites (Gui/make_map.py): a letter per region,
+// numbered outward from home. Typed codes win.
+function region(x, d) {
+	if (d >= 7) return "A";
+	const third = x < -380 ? "west" : (x > 380 ? "east" : "middle");
+	if (d <= 3) return { west: "G", middle: "E", east: "F" }[third];
+	return { west: "D", middle: "C", east: "B" }[third];
+}
+function autoCodes() {
+	const codes = {}, groups = {};
+	for (const j of doc.junctions) {
+		const lm = LANDMARKS.find(l => l.name === j.landmark);
+		if (lm) { codes[j.id] = lm.code; continue; }
+		const d = depthOf(j);
+		const letter = region(j.x, isNaN(d) ? 1 : d);
+		(groups[letter] = groups[letter] || []).push(j);
+	}
+	for (const letter in groups) {
+		groups[letter].sort((a, b) => Math.hypot(a.x, a.y) - Math.hypot(b.x, b.y));
+		groups[letter].forEach((j, i) => codes[j.id] = letter + (i + 1));
+	}
+	return codes;
+}
+function codeOf(j, codes) { return j.code || (codes || autoCodes())[j.id] || "?"; }
+
+// ---- Undo / storage ---------------------------------------------------------
+function snapshot() { return JSON.stringify(doc); }
+function pushUndo() {
+	undoStack.push(snapshot());
+	if (undoStack.length > 200) undoStack.shift();
+}
+function undo() {
+	if (!undoStack.length) return;
+	doc = JSON.parse(undoStack.pop());
+	if (!byId(selected)) selected = 1;
+	changed();
+}
+function changed() {
+	dirty = true;
+	try { localStorage.setItem(STORAGE_KEY, snapshot()); } catch (e) { /* storage off: fine */ }
+	refresh();
+}
+function refresh() { draw(); buildPanel(); buildWarnings(); }
+
+// ---- View ---------------------------------------------------------------
+function resize() {
+	const r = canvas.getBoundingClientRect();
+	const dpr = window.devicePixelRatio || 1;
+	canvas.width = Math.max(1, Math.round(r.width * dpr));
+	canvas.height = Math.max(1, Math.round(r.height * dpr));
+	ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+	if (!fitted) fitView();
+	draw();
+}
+let fitted = false;
+function fitView() {
+	const r = canvas.getBoundingClientRect();
+	if (r.width < 10 || r.height < 10) return; // (not laid out yet: resize fits it)
+	fitted = true;
+	const scale = Math.min(r.width / (X1 - X0), r.height / (Y1 - Y0)) * 0.96;
+	view.scale = scale;
+	view.ox = (X0 + X1) / 2 - r.width / 2 / scale;
+	view.oy = (Y0 + Y1) / 2 - r.height / 2 / scale;
+}
+function toScreen(x, y) { return { x: (x - view.ox) * view.scale, y: (y - view.oy) * view.scale }; }
+function toMap(sx, sy) { return { x: sx / view.scale + view.ox, y: sy / view.scale + view.oy }; }
+function clampMap(p) {
+	return { x: Math.round(Math.min(X1 - 40, Math.max(X0 + 40, p.x))), y: Math.round(Math.min(Y1 - 40, Math.max(Y0 + 40, p.y))) };
+}
+
+// ---- Drawing ----------------------------------------------------------------
+function draw() {
+	const r = canvas.getBoundingClientRect();
+	ctx.fillStyle = css("--bg");
+	ctx.fillRect(0, 0, r.width, r.height);
+	const a = toScreen(X0, Y0), b = toScreen(X1, Y1);
+	if (img.complete && img.naturalWidth) ctx.drawImage(img, a.x, a.y, b.x - a.x, b.y - a.y);
+	ctx.strokeStyle = css("--line"); ctx.strokeRect(a.x, a.y, b.x - a.x, b.y - a.y);
+
+	// Depth rings and tier borders
+	const c = toScreen(CORE.x, CORE.y);
+	ctx.font = "11px system-ui, sans-serif";
+	for (let d = 1; d <= 9; d++) {
+		ctx.beginPath();
+		ctx.arc(c.x, c.y, ringRadius(d) * view.scale, 0, Math.PI * 2);
+		ctx.strokeStyle = "rgba(255,255,255,0.13)"; ctx.lineWidth = 1; ctx.setLineDash([4, 6]); ctx.stroke(); ctx.setLineDash([]);
+		const lp = toScreen(CORE.x + 30, CORE.y + ringRadius(d) - 8);
+		ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.fillText("JCT " + d, lp.x, lp.y);
+	}
+	for (const edge of [3.5, 6.5]) {
+		ctx.beginPath();
+		ctx.arc(c.x, c.y, (CORE_RADIUS - DEPTH_STEP * edge) * view.scale, 0, Math.PI * 2);
+		ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 1.5; ctx.stroke();
+	}
+
+	const codes = autoCodes();
+	// Roads (with an arrow halfway: you only drive one way)
+	for (const j of doc.junctions) {
+		for (const from of roadsInto(j)) {
+			const p = byId(from);
+			if (!p) continue;
+			const s1 = toScreen(p.x, p.y), s2 = toScreen(j.x, j.y);
+			ctx.beginPath(); ctx.moveTo(s1.x, s1.y); ctx.lineTo(s2.x, s2.y);
+			ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = 5; ctx.stroke();
+			const lit = j.id === selected || from === selected;
+			ctx.strokeStyle = lit ? "#ffffff" : "#d8c890"; ctx.lineWidth = 2.5; ctx.stroke();
+			const mx = (s1.x + s2.x) / 2, my = (s1.y + s2.y) / 2, ang = Math.atan2(s2.y - s1.y, s2.x - s1.x);
+			ctx.beginPath();
+			ctx.moveTo(mx + Math.cos(ang) * 6, my + Math.sin(ang) * 6);
+			ctx.lineTo(mx + Math.cos(ang + 2.5) * 6, my + Math.sin(ang + 2.5) * 6);
+			ctx.lineTo(mx + Math.cos(ang - 2.5) * 6, my + Math.sin(ang - 2.5) * 6);
+			ctx.closePath();
+			ctx.fillStyle = lit ? "#ffffff" : "#d8c890"; ctx.fill();
+		}
+	}
+	// Junctions
+	for (const j of doc.junctions) drawJunction(j, codes);
+	// Garage
+	const g = toScreen(0, 0);
+	ctx.fillStyle = "#000"; ctx.fillRect(g.x - NODE_R - 2, g.y - NODE_R - 2, NODE_R * 2 + 4, NODE_R * 2 + 4);
+	ctx.fillStyle = css("--garage"); ctx.fillRect(g.x - NODE_R, g.y - NODE_R, NODE_R * 2, NODE_R * 2);
+	label("GARAGE", g.x, g.y + NODE_R + 13);
+	if (selected === 1) { ctx.strokeStyle = css("--accent"); ctx.lineWidth = 3; ctx.strokeRect(g.x - NODE_R - 5, g.y - NODE_R - 5, NODE_R * 2 + 10, NODE_R * 2 + 10); }
+}
+function label(text, x, y) {
+	ctx.font = "bold 11px system-ui, sans-serif"; ctx.textAlign = "center";
+	ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,0.85)"; ctx.strokeText(text, x, y);
+	ctx.fillStyle = "#fff"; ctx.fillText(text, x, y);
+	ctx.textAlign = "left";
+}
+function drawJunction(j, codes) {
+	const s = toScreen(j.x, j.y);
+	const d = depthOf(j);
+	const colour = isNaN(d) ? css("--bad") : css(tierOf(d).colour);
+	ctx.beginPath(); ctx.arc(s.x, s.y, NODE_R + 2, 0, Math.PI * 2); ctx.fillStyle = "#000"; ctx.fill();
+	ctx.beginPath(); ctx.arc(s.x, s.y, NODE_R, 0, Math.PI * 2); ctx.fillStyle = colour; ctx.fill();
+	const symbol = j.landmark ? "★" : ({ deadEnd: "✕", noExit: "!", collapsed: "~", normal: "•" }[j.kind] || "");
+	if (symbol) {
+		ctx.font = "bold 12px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+		ctx.fillStyle = "#000"; ctx.fillText(symbol, s.x, s.y + 1);
+		ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+	}
+	label(codeOf(j, codes) + (isNaN(d) ? " (cut off)" : " · JCT " + numberOf(j)), s.x, s.y - NODE_R - 6);
+	if (j.id === selected) {
+		ctx.beginPath(); ctx.arc(s.x, s.y, NODE_R + 6, 0, Math.PI * 2);
+		ctx.strokeStyle = css("--accent"); ctx.lineWidth = 3; ctx.stroke();
+	}
+}
+
+// ---- Mouse --------------------------------------------------------------
+function hit(sx, sy) {
+	for (let i = doc.junctions.length - 1; i >= 0; i--) {
+		const j = doc.junctions[i], s = toScreen(j.x, j.y);
+		if (Math.hypot(s.x - sx, s.y - sy) <= NODE_R + 4) return j.id;
+	}
+	const g = toScreen(0, 0);
+	if (Math.abs(g.x - sx) <= NODE_R + 4 && Math.abs(g.y - sy) <= NODE_R + 4) return 1;
+	return null;
+}
+// Is `id` somewhere along the roads from `from`? (A road from there back to
+// `from` would make a loop.)
+function isAhead(from, id) {
+	const seen = new Set(), queue = [from];
+	while (queue.length) {
+		for (const c of childrenOf(queue.shift())) {
+			if (c.id === id) return true;
+			if (!seen.has(c.id)) { seen.add(c.id); queue.push(c.id); }
+		}
+	}
+	return false;
+}
+
+let drag = null; // { kind: "move"|"pan", id, start, moved, undoTaken }
+canvas.addEventListener("contextmenu", e => e.preventDefault());
+canvas.addEventListener("mousedown", e => {
+	const r = canvas.getBoundingClientRect();
+	const sx = e.clientX - r.left, sy = e.clientY - r.top;
+	if (e.button === 1 || e.button === 2) {
+		drag = { kind: "pan", sx, sy, ox: view.ox, oy: view.oy };
+		e.preventDefault();
+		return;
+	}
+	if (e.button !== 0) return;
+	const id = hit(sx, sy);
+	if (connecting) {
+		const mode = connecting;
+		connecting = false; showMode("");
+		const j = byId(selected);
+		if (id === null || selected === 1 || !j) return;
+		if (id === selected || isAhead(selected, id)) {
+			setStatus("Can't connect there: the roads would loop back onto themselves");
+			return;
+		}
+		pushUndo();
+		if (mode === "parent") {
+			j.parent = id;
+			if (j.also) j.also = j.also.filter(a => a !== id);
+		} else if (!roadsInto(j).includes(id)) {
+			j.also = [...(j.also || []), id];
+		}
+		if (j.also && !j.also.length) delete j.also;
+		changed();
+		return;
+	}
+	if (id !== null) {
+		selected = id;
+		drag = id !== 1 ? { kind: "move", id, sx, sy, moved: false } : null;
+		refresh();
+		return;
+	}
+	// Empty map: a new junction, its road from the selected one
+	const p = clampMap(toMap(sx, sy));
+	pushUndo();
+	const j = { id: doc.nextId++, parent: byId(selected) ? selected : 1, x: p.x, y: p.y };
+	doc.junctions.push(j);
+	selected = j.id;
+	changed();
+});
+window.addEventListener("mousemove", e => {
+	const r = canvas.getBoundingClientRect();
+	const sx = e.clientX - r.left, sy = e.clientY - r.top;
+	const m = toMap(sx, sy);
+	if (sx >= 0 && sy >= 0 && sx <= r.width && sy <= r.height) {
+		const ring = ringAt(m.x, m.y);
+		setStatus("x " + Math.round(m.x) + ", y " + Math.round(m.y) + "  ·  ring JCT " + ring + " (" + tierOf(ring).name + ")");
+	}
+	if (!drag) return;
+	if (drag.kind === "pan") {
+		view.ox = drag.ox - (sx - drag.sx) / view.scale;
+		view.oy = drag.oy - (sy - drag.sy) / view.scale;
+		draw();
+	} else if (drag.kind === "move") {
+		if (!drag.moved && Math.hypot(sx - drag.sx, sy - drag.sy) < 4) return;
+		if (!drag.moved) { pushUndo(); drag.moved = true; }
+		const j = byId(drag.id), p = clampMap(m);
+		j.x = p.x; j.y = p.y;
+		draw();
+	}
+});
+window.addEventListener("mouseup", () => {
+	if (drag && drag.kind === "move" && drag.moved) changed();
+	drag = null;
+});
+canvas.addEventListener("wheel", e => {
+	e.preventDefault();
+	const r = canvas.getBoundingClientRect();
+	const sx = e.clientX - r.left, sy = e.clientY - r.top;
+	const before = toMap(sx, sy);
+	view.scale = Math.min(4, Math.max(0.08, view.scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15)));
+	view.ox = before.x - sx / view.scale;
+	view.oy = before.y - sy / view.scale;
+	draw();
+}, { passive: false });
+
+window.addEventListener("keydown", e => {
+	const typing = ["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName);
+	if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(false); return; }
+	if (typing) return;
+	if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); }
+	else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); removeSelected(); }
+	else if (e.key === "Escape") { connecting = false; showMode(""); selected = 1; refresh(); }
+});
+
+function removeSelected() {
+	if (selected === 1) return;
+	const j = byId(selected);
+	if (!j) return;
+	pushUndo();
+	for (const child of primaryChildren(j.id)) child.parent = j.parent;
+	doc.junctions = doc.junctions.filter(o => o.id !== j.id);
+	// (roads merging from it go; one that now doubles its other road too)
+	for (const o of doc.junctions) {
+		if (!o.also) continue;
+		o.also = o.also.filter(a => a !== j.id && a !== o.parent);
+		if (!o.also.length) delete o.also;
+	}
+	selected = byId(j.parent) ? j.parent : 1;
+	changed();
+}
+
+// ---- Side panel ---------------------------------------------------------
+const panel = document.getElementById("selPanel");
+function option(value, text, current) {
+	const o = document.createElement("option");
+	o.value = value; o.textContent = text; o.selected = String(current) === String(value);
+	return o;
+}
+function field(labelText, el) {
+	const l = document.createElement("label"); l.textContent = labelText;
+	panel.append(l, el);
+	return el;
+}
+function setProp(j, key, value) {
+	pushUndo();
+	if (value === "" || value === null || value === undefined) delete j[key]; else j[key] = value;
+	changed();
+}
+function buildPanel() {
+	panel.innerHTML = "";
+	if (selected === 1) {
+		const info = document.createElement("div"); info.className = "info";
+		info.innerHTML = "<b>Garage</b><br><span class='muted'>Fixed at 0, 0. Click the map to add a junction leading out of it.</span><br>" +
+			"<span class='muted'>Roads out: " + childrenOf(1).length + "</span>";
+		panel.append(info);
+		return;
+	}
+	const j = byId(selected);
+	if (!j) return;
+	const d = depthOf(j);
+	const codes = autoCodes();
+	const info = document.createElement("div"); info.className = "info";
+	info.innerHTML = "<b>" + codeOf(j, codes) + "</b> &nbsp;<span class='muted'>" +
+		(isNaN(d) ? "not connected to the garage" : "JCT " + numberOf(j) + " · " + tierOf(d).name) + "</span><br>" +
+		"<span class='muted'>at " + j.x + ", " + j.y + " (ring JCT " + ringAt(j.x, j.y) + ") · roads in: " + roadsInto(j).length + " · roads on: " + childrenOf(j.id).length + "</span>";
+	panel.append(info);
+
+	const row = document.createElement("div"); row.className = "row"; row.style.marginTop = "8px";
+	const bConnect = document.createElement("button"); bConnect.textContent = "Connect to…";
+	bConnect.title = "Pick the junction this one's road comes from";
+	bConnect.onclick = () => { connecting = "parent"; showMode("Click the junction its road should come from (Esc to cancel)"); };
+	const bMerge = document.createElement("button"); bMerge.textContent = "Add road from…";
+	bMerge.title = "Another junction's road also leads here (roads merge)";
+	bMerge.onclick = () => { connecting = "also"; showMode("Click another junction whose road should also lead here (Esc to cancel)"); };
+	const bAdd = document.createElement("button"); bAdd.textContent = "Select road start";
+	bAdd.title = "Select the junction before this one";
+	bAdd.onclick = () => { selected = j.parent; refresh(); };
+	const bDel = document.createElement("button"); bDel.textContent = "Delete"; bDel.className = "danger";
+	bDel.onclick = removeSelected;
+	row.append(bConnect, bMerge, bAdd, bDel);
+	panel.append(row);
+	// Extra roads in (merging), each removable
+	for (const from of j.also || []) {
+		const r = document.createElement("div"); r.className = "row";
+		const t = document.createElement("span"); t.className = "muted"; t.style.flex = "1";
+		t.textContent = "Road also from " + (from === 1 ? "the garage" : codeOf(byId(from) || { id: from }, codes));
+		const x = document.createElement("button"); x.textContent = "Remove"; x.className = "danger";
+		x.onclick = () => {
+			pushUndo();
+			j.also = j.also.filter(a => a !== from);
+			if (!j.also.length) delete j.also;
+			changed();
+		};
+		r.append(t, x);
+		panel.append(r);
+	}
+
+	const code = document.createElement("input"); code.type = "text"; code.placeholder = codes[j.id] + " (automatic)"; code.value = j.code || "";
+	code.maxLength = 4;
+	code.onchange = () => setProp(j, "code", code.value.trim().toUpperCase());
+	field("Code on the map", code);
+
+	const name = document.createElement("input"); name.type = "text"; name.placeholder = "Random (" + MAP_NAMES.slice(0, 3).join(", ") + "…)"; name.value = j.name || "";
+	name.setAttribute("list", "mapNames");
+	name.onchange = () => setProp(j, "name", name.value.trim().toUpperCase());
+	field("Map name", name);
+
+	const kind = document.createElement("select");
+	for (const [v, t] of KINDS) kind.append(option(v, t, j.kind || "random"));
+	kind.onchange = () => setProp(j, "kind", kind.value === "random" ? "" : kind.value);
+	field("Kind", kind);
+
+	const landmark = document.createElement("select");
+	landmark.append(option("", "None", j.landmark || ""));
+	for (const l of LANDMARKS) landmark.append(option(l.name, l.title, j.landmark || ""));
+	landmark.onchange = () => setProp(j, "landmark", landmark.value);
+	field("Landmark", landmark);
+
+	const biome = document.createElement("select");
+	for (const [v, t] of BIOMES) biome.append(option(v, t, j.biome || ""));
+	biome.onchange = () => setProp(j, "biome", biome.value);
+	field("Biome", biome);
+
+	const buildings = document.createElement("select");
+	buildings.append(option("", "Random (by map name)", j.buildings ?? ""));
+	["None", "Low", "Medium", "High", "Max"].forEach((t, i) => buildings.append(option(i, i + " – " + t, j.buildings ?? "")));
+	buildings.onchange = () => setProp(j, "buildings", buildings.value === "" ? "" : Number(buildings.value));
+	field("Buildings (ruins, shacks)", buildings);
+
+	const condMode = document.createElement("select");
+	condMode.append(option("random", "Random (rolled every trip)", j.conditions ? "fixed" : "random"));
+	condMode.append(option("fixed", "Always these:", j.conditions ? "fixed" : "random"));
+	condMode.onchange = () => setProp(j, "conditions", condMode.value === "fixed" ? [] : "");
+	field("Conditions", condMode);
+	if (j.conditions) {
+		const grid = document.createElement("div"); grid.className = "conds";
+		for (const [v, t] of CONDITIONS) {
+			const l = document.createElement("label");
+			const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = j.conditions.includes(v);
+			cb.onchange = () => {
+				pushUndo();
+				j.conditions = cb.checked ? [...j.conditions, v] : j.conditions.filter(c => c !== v);
+				changed();
+			};
+			l.append(cb, document.createTextNode(t));
+			grid.append(l);
+		}
+		panel.append(grid);
+	}
+	if (j.landmark) {
+		const note = document.createElement("div"); note.className = "help"; note.style.marginTop = "6px";
+		note.textContent = "Landmarks are always safe, have no gateway and 2 stable anchors (the game sets those).";
+		panel.append(note);
+	}
+}
+
+// ---- Checks -------------------------------------------------------------
+function buildWarnings() {
+	const list = document.getElementById("warnings");
+	list.innerHTML = "";
+	const add = (text, cls) => { const li = document.createElement("li"); li.textContent = text; if (cls) li.className = cls; list.append(li); };
+	const codes = autoCodes();
+	const name = j => codeOf(j, codes);
+	if (!childrenOf(1).length) add("The garage has no roads out: click the map to add the first junction.", "bad");
+	let deepest = 0, ends = 0;
+	for (const j of doc.junctions) {
+		const d = depthOf(j);
+		if (isNaN(d)) { add(name(j) + " isn't connected to the garage.", "bad"); continue; }
+		deepest = Math.max(deepest, numberOf(j));
+		const kids = childrenOf(j.id);
+		if (j.kind === "deadEnd" && kids.length) add(name(j) + " is a dead end, so the " + kids.length + " junction(s) beyond it can never be reached.", "bad");
+		if (!kids.length && j.kind !== "deadEnd") ends++;
+		const ways = childrenOf(j.parent);
+		if (j.kind === "deadEnd" && ways.length === 1) add(name(j) + " is the only way on from " + (j.parent === 1 ? "the garage" : name(byId(j.parent))) + ", and it's a dead end.");
+		if (j.landmark && (j.kind && j.kind !== "noExit")) add(name(j) + ": a landmark's kind is set by the game (safe, no gateway); the Kind is ignored.");
+		const before = byId(j.parent), dBefore = j.parent === 1 ? 0 : depthOf(before);
+		if (!isNaN(dBefore) && TIERS.indexOf(tierOf(d)) - TIERS.indexOf(tierOf(Math.max(dBefore, 1))) >= 2) add(name(j) + " jumps a whole zone tier from " + (j.parent === 1 ? "the garage" : name(before)) + ".");
+		if (!isNaN(dBefore) && tierOf(d) !== tierOf(Math.max(dBefore, 1)) && d > dBefore) add(name(j) + " is in the " + tierOf(d).name + ": you can't drive there until the story opens it.", "ok");
+		if (j.conditions && j.conditions.includes("stable") && j.conditions.includes("unstable")) add(name(j) + ": Perpetual Stability and Elevated Instability together.");
+		if (j.conditions && j.conditions.includes("anchorSurge") && j.conditions.includes("anchorDrought")) add(name(j) + ": Anchor Surge and Anchor Drought together.");
+		for (const o of doc.junctions) {
+			if (o.id > j.id && Math.hypot(o.x - j.x, o.y - j.y) < 70) add(name(j) + " and " + name(o) + " are on top of each other.");
+		}
+	}
+	for (const l of LANDMARKS) {
+		const placed = doc.junctions.filter(j => j.landmark === l.name);
+		if (placed.length > 1) add(l.title + " is placed " + placed.length + " times; only one is used.", "bad");
+		if (!placed.length) add(l.title + " isn't placed: the game adds it by itself off a junction at depth " + (l.depth - 1) + ".");
+	}
+	if (doc.junctions.length) {
+		for (const goal of [3, 6, 9]) {
+			if (!doc.junctions.some(j => numberOf(j) >= goal)) add("No JCT " + goal + " or further: the story needs an escape there (past your last junctions the map goes on as a random one).");
+		}
+		if (ends) add(ends + " junction(s) have no roads on: the map continues randomly past them (set Dead end to stop it).");
+		add(doc.junctions.length + " junctions · furthest JCT " + deepest, "ok");
+	}
+}
+
+// ---- Files --------------------------------------------------------------
+const NOTE = "Pacific Scrap hand-made junction map (Tools/map_editor.html). A new save uses it; delete this file for random maps.";
+function serialise() {
+	// garage first, then outward, so the file reads like the map
+	const out = [], queue = [1];
+	while (queue.length) {
+		const id = queue.shift();
+		for (const j of primaryChildren(id)) {
+			const e = { id: j.id, parent: j.parent, x: j.x, y: j.y };
+			if (j.also && j.also.length) e.also = j.also;
+			for (const k of ["code", "name", "kind", "biome", "landmark", "buildings", "conditions"]) if (j[k] !== undefined && j[k] !== "") e[k] = j[k];
+			out.push(e);
+			queue.push(j.id);
+		}
+	}
+	return JSON.stringify({ version: 1, note: NOTE, junctions: out }, null, "\t") + "\n";
+}
+function load(text) {
+	const data = JSON.parse(text);
+	if (!data || !Array.isArray(data.junctions)) throw new Error("No junctions in this file");
+	const junctions = data.junctions.filter(j => typeof j.id === "number" && j.id > 1 && typeof j.parent === "number" && typeof j.x === "number" && typeof j.y === "number");
+	for (const j of junctions) {
+		if (Array.isArray(j.also)) j.also = j.also.filter(a => typeof a === "number" && a !== j.parent);
+		if (!Array.isArray(j.also) || !j.also.length) delete j.also;
+	}
+	pushUndo();
+	doc = { junctions, nextId: Math.max(1, ...junctions.map(j => j.id)) + 1 };
+	selected = 1;
+	changed();
+	dirty = false;
+}
+async function save(askWhere) {
+	const text = serialise();
+	if (window.showSaveFilePicker) {
+		try {
+			if (!fileHandle || askWhere) {
+				fileHandle = await window.showSaveFilePicker({ suggestedName: "map_layout.json", types: [{ description: "Junction map", accept: { "application/json": [".json"] } }] });
+			}
+			const w = await fileHandle.createWritable();
+			await w.write(text); await w.close();
+			dirty = false;
+			document.getElementById("saveInfo").innerHTML = "Saved to <b>" + fileHandle.name + "</b> at " + new Date().toLocaleTimeString() + ". Clear the game's Cache before launching.";
+			return;
+		} catch (e) {
+			if (e.name === "AbortError") return;
+			console.warn(e);
+		}
+	}
+	// Fallback: download it, then move it to Maps/map_layout.json in the mod
+	const a = document.createElement("a");
+	a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+	a.download = "map_layout.json";
+	a.click();
+	setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+	dirty = false;
+	document.getElementById("saveInfo").innerHTML = "Downloaded <b>map_layout.json</b>: move it into the mod's <b>Maps</b> folder.";
+}
+async function open() {
+	if (window.showOpenFilePicker) {
+		try {
+			const [handle] = await window.showOpenFilePicker({ types: [{ description: "Junction map", accept: { "application/json": [".json"] } }] });
+			load(await (await handle.getFile()).text());
+			fileHandle = handle;
+			document.getElementById("saveInfo").innerHTML = "Opened <b>" + handle.name + "</b>. Save writes back to it.";
+			return;
+		} catch (e) {
+			if (e.name === "AbortError") return;
+			if (e instanceof SyntaxError || e.message === "No junctions in this file") { alert("Couldn't read it: " + e.message); return; }
+		}
+	}
+	document.getElementById("fileInput").click();
+}
+document.getElementById("fileInput").onchange = async e => {
+	const f = e.target.files[0];
+	if (!f) return;
+	try { load(await f.text()); } catch (err) { alert("Couldn't read it: " + err.message); }
+	e.target.value = "";
+};
+document.getElementById("btnSave").onclick = () => save(false);
+document.getElementById("btnSaveAs").onclick = () => save(true);
+document.getElementById("btnOpen").onclick = open;
+document.getElementById("btnNew").onclick = () => {
+	if (doc.junctions.length && !confirm("Start a new empty map? (Undo can bring it back)")) return;
+	pushUndo();
+	doc = { junctions: [], nextId: doc.nextId }; // (ids keep counting up: old saves still know theirs)
+	selected = 1;
+	fileHandle = null;
+	changed();
+};
+window.addEventListener("beforeunload", e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
+
+// ---- Misc ---------------------------------------------------------------
+function setStatus(t) { document.getElementById("status").textContent = t; }
+function showMode(t) { const m = document.getElementById("mode"); m.textContent = t; m.style.display = t ? "block" : "none"; }
+const names = document.createElement("datalist"); names.id = "mapNames";
+for (const n of MAP_NAMES) { const o = document.createElement("option"); o.value = n; names.append(o); }
+document.body.append(names);
+
+try {
+	const saved = localStorage.getItem(STORAGE_KEY);
+	if (saved) { const d = JSON.parse(saved); if (d && Array.isArray(d.junctions)) doc = d; }
+} catch (e) { /* no storage: start empty */ }
+window.addEventListener("resize", resize);
+resize();
+fitView();
+refresh();
+</script>
+</body>
+</html>

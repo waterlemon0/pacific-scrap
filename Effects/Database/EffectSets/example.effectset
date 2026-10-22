@@ -1,0 +1,569 @@
+{
+	"PacificScrap - GatewaySphere": {
+		"effectList": [
+			{
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"offsetScale": [
+					1.0,
+					1.0,
+					1.0
+				],
+				"renderable": [
+					"$CONTENT_DATA/Effects/Renderable/pacific_gateway_sphere.rend"
+				],
+				"type": "renderable"
+			}
+		]
+	},
+	"PacificScrap - Alarm": {
+		"effectList": [
+			{
+				"audio": [
+					"event:/props/installations/warehouse/explode/alarm_start"
+				],
+				"delay": 0.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			},
+			{
+				"audio": [
+					"event:/props/installations/warehouse/explode/alarm_start"
+				],
+				"delay": 3.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			},
+			{
+				"audio": [
+					"event:/props/installations/warehouse/explode/alarm_start"
+				],
+				"delay": 6.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			}
+		]
+	},
+	"PacificScrap - GatewayShake": {
+		"effectList": [
+			{
+				"delay": 0.0,
+				"duration": 3.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"shakeAmplitude": [
+					1.0,
+					1.0,
+					1.0
+				],
+				"shakeFalloffDuration": 2.0,
+				"shakeFalloffEasing": "easeInOutQuad",
+				"shakeFrequency": [
+					30.0,
+					30.0,
+					30.0
+				],
+				"shakeRadius": 400,
+				"shakeRotational": true,
+				"shakeStrength": 0.12,
+				"type": "cameraShake"
+			},
+			{
+				"delay": 0.6,
+				"duration": 1.8,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"shakeAmplitude": [
+					0.5,
+					0.5,
+					0.5
+				],
+				"shakeFalloffDuration": 1.0,
+				"shakeFalloffEasing": "easeInOutQuad",
+				"shakeFrequency": [
+					60.0,
+					60.0,
+					60.0
+				],
+				"shakeRadius": 400,
+				"shakeRotational": false,
+				"shakeStrength": 0.08,
+				"type": "cameraShake"
+			},
+			{
+				"audio": [
+					"event:/props/installations/warehouse/shake"
+				],
+				"delay": 0.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			},
+			{
+				"audio": [
+					"event:/props/installations/warehouse/shake"
+				],
+				"delay": 1.2,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			}
+		]
+	},
+	"PacificScrap - AnchorGrab": {
+		"effectList": [
+			{
+				"delay": 0.0,
+				"effects": "PowerSocket - Activate",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"delay": 0.0,
+				"effects": "Enviroment - Electricity_burst",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"delay": 0.15,
+				"effects": "Enviroment - Sparks_medium",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"delay": 0.0,
+				"duration": 0.6,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"shakeAmplitude": [
+					1.0,
+					1.0,
+					1.0
+				],
+				"shakeFalloffDuration": 0.0,
+				"shakeFalloffEasing": "linear",
+				"shakeFrequency": [
+					40.0,
+					40.0,
+					40.0
+				],
+				"shakeRadius": 30,
+				"shakeRotational": false,
+				"shakeStrength": 0.05,
+				"type": "cameraShake"
+			}
+		]
+	},
+	"PacificScrap - ArcCharge": {
+		"effectList": [
+			{
+				"audio": [
+					"event:/char/npc/bots/enemies/trashbot/charge"
+				],
+				"delay": 0.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			},
+			{
+				"delay": 0.0,
+				"effects": "Harvestable - Sparkstone_activate",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"delay": 0.5,
+				"effects": "Enviroment - Electricity_burst",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"delay": 1.0,
+				"effects": "Enviroment - Sparks_medium",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"delay": 2.0,
+				"effects": "Enviroment - Electricity_burst",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"delay": 2.6,
+				"effects": "Enviroment - Sparks_medium",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"audio": [
+					"event:/char/npc/bots/enemies/trashbot/charge"
+				],
+				"delay": 2.5,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			},
+			{
+				"delay": 3.2,
+				"effects": "Enviroment - Electricity_burst",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"delay": 3.6,
+				"effects": "Enviroment - Sparks_large",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"delay": 4.2,
+				"effects": "Enviroment - Sparks_large",
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"type": "secondaryEffect"
+			},
+			{
+				"delay": 0.0,
+				"duration": 2.5,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"shakeAmplitude": [
+					1.0,
+					1.0,
+					1.0
+				],
+				"shakeFalloffDuration": 0.0,
+				"shakeFalloffEasing": "linear",
+				"shakeFrequency": [
+					30.0,
+					30.0,
+					30.0
+				],
+				"shakeRadius": 60,
+				"shakeRotational": false,
+				"shakeStrength": 0.02,
+				"type": "cameraShake"
+			},
+			{
+				"delay": 2.5,
+				"duration": 2.5,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"shakeAmplitude": [
+					1.0,
+					1.0,
+					1.0
+				],
+				"shakeFalloffDuration": 0.0,
+				"shakeFalloffEasing": "linear",
+				"shakeFrequency": [
+					45.0,
+					45.0,
+					45.0
+				],
+				"shakeRadius": 60,
+				"shakeRotational": false,
+				"shakeStrength": 0.05,
+				"type": "cameraShake"
+			}
+		]
+	},
+	"PacificScrap - ArcBlast": {
+		"effectList": [
+			{
+				"audio": [
+					"event:/props/installations/powercore_insert"
+				],
+				"delay": 0.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			},
+			{
+				"audio": [
+					"event:/props/installations/downedship_poweron"
+				],
+				"delay": 0.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			},
+			{
+				"audio": [
+					"event:/props/installations/minehub/powerstation_powerup"
+				],
+				"delay": 0.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			},
+			{
+				"audio": [
+					"event:/coll/collapse/mining/sparkstone"
+				],
+				"delay": 0.05,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			},
+			{
+				"delay": 0.0,
+				"duration": 1.2,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"shakeAmplitude": [
+					1.5,
+					1.5,
+					1.5
+				],
+				"shakeFalloffDuration": 0.8,
+				"shakeFalloffEasing": "easeInOutQuad",
+				"shakeFrequency": [
+					50.0,
+					50.0,
+					50.0
+				],
+				"shakeRadius": 80,
+				"shakeRotational": false,
+				"shakeStrength": 0.35,
+				"type": "cameraShake"
+			}
+		]
+	},
+	"PacificScrap - StormPanel": {
+		"effectList": [
+			{
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"offsetScale": [
+					1.0,
+					1.0,
+					1.0
+				],
+				"renderable": [
+					"$CONTENT_DATA/Effects/Renderable/pacific_storm_panel.rend"
+				],
+				"type": "renderable"
+			}
+		]
+	},
+	"PacificScrap - GatewayPanel": {
+		"effectList": [
+			{
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"offsetScale": [
+					1.0,
+					1.0,
+					1.0
+				],
+				"renderable": [
+					"$CONTENT_DATA/Effects/Renderable/pacific_gateway_panel.rend"
+				],
+				"type": "renderable"
+			}
+		]
+	},
+	"PacificScrap - StormHologram": {
+		"effectList": [
+			{
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"offsetScale": [
+					1.0,
+					1.0,
+					1.0
+				],
+				"renderable": [
+					"$CONTENT_DATA/Effects/Renderable/pacific_storm_hologram.rend"
+				],
+				"type": "renderable"
+			}
+		]
+	},
+	"PacificScrap - GatewayHum": {
+		"effectList": [
+			{
+				"audio": [
+					"event:/amb/3D/amb_3D_elevator"
+				],
+				"delay": 0.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			}
+		]
+	},
+	"PacificScrap - Teleport": {
+		"effectList": [
+			{
+				"audio": [
+					"event:/tools/builderguide/activate"
+				],
+				"delay": 0.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			}
+		]
+	},
+	"PacificScrap - GateAlarm": {
+		"effectList": [
+			{
+				"audio": [
+					"event:/props/installations/warehouse/explode/alarm_start"
+				],
+				"delay": 0.0,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			},
+			{
+				"audio": [
+					"event:/props/installations/warehouse/explode/alarm_start"
+				],
+				"delay": 2.5,
+				"offset": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"parameters": [],
+				"type": "audio"
+			}
+		]
+	}
+}

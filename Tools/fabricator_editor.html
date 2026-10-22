@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fabricator Tree Editor</title>
+<!--
+	Pacific Scrap Fabricator editor. Open this file in a browser (Edge or Chrome
+	can save straight into the mod folder; others download the file).
+
+	Edit the Fabricator's tabs and upgrades: which Craftbot recipes it unlocks,
+	what they cost in energy anchors, and what has to be unlocked first. Save
+	as Fabricator/upgrade_tree.json in the mod (Scripts/upgrade_tree.lua reads
+	it), then clear the game's Cache folder.
+
+	The tree is laid out the same way the game does it (Fabricator.lua,
+	cl_buildTree): each upgrade one column right of its deepest requirement.
+	Item names, titles and icons come from fabricator_catalog.js (made by
+	make_fabricator_catalog.py from the game's files).
+-->
+<script src="fabricator_catalog.js"></script>
+<style>
+:root {
+	--bg: #14181b; --panel: #1d2327; --panel2: #252c31; --line: #36414a;
+	--text: #e4e9ec; --muted: #8d9aa3; --accent: #5fd0c0; --warn: #f0b040; --bad: #f06a5a;
+	--stable: #f5b830; --unstable: #f27aa8; --corrupted: #4ed98c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, "Segoe UI", sans-serif; }
+#app { display: flex; height: 100%; }
+#left { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+#tabs { display: flex; gap: 2px; padding: 8px 8px 0; background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+#tabs button { border-radius: 4px 4px 0 0; border-bottom: 0; }
+#tabs button.on { background: var(--accent); color: #042; font-weight: 600; border-color: var(--accent); }
+#tabs button.over { opacity: .45; }
+#stage { flex: 1; position: relative; overflow: hidden; }
+canvas { display: block; width: 100%; height: 100%; }
+#status { position: absolute; left: 8px; bottom: 8px; background: rgba(0,0,0,.6); padding: 4px 8px; border-radius: 4px; color: var(--muted); pointer-events: none; }
+#mode { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); background: var(--warn); color: #000; padding: 4px 12px; border-radius: 4px; font-weight: 600; display: none; }
+#empty { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: var(--muted); text-align: center; padding: 16px; }
+#side { width: 360px; background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 12px; }
+h1 { font-size: 15px; margin: 0 0 8px; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 6px; }
+.row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; align-items: center; }
+button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; cursor: pointer; font: inherit; }
+button:hover { border-color: var(--accent); }
+button:disabled { opacity: .4; cursor: default; border-color: var(--line); }
+button.primary { background: var(--accent); color: #062; border-color: var(--accent); font-weight: 600; }
+button.danger:hover { border-color: var(--bad); color: var(--bad); }
+button.small { padding: 1px 6px; font-size: 12px; }
+label { display: block; color: var(--muted); margin: 6px 0 2px; }
+select, input[type=text], input[type=number], input[type=search] { width: 100%; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 4px 6px; font: inherit; }
+.costs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.costs label { margin: 0; }
+.costs input { margin-top: 2px; }
+.info { background: var(--panel2); border-radius: 4px; padding: 6px 8px; }
+.muted { color: var(--muted); }
+.chips { display: flex; flex-direction: column; gap: 3px; }
+.chip { display: flex; align-items: center; gap: 6px; background: var(--panel2); border-radius: 4px; padding: 2px 4px; }
+.chip span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.icon { width: 28px; height: 28px; flex: none; border-radius: 3px; background-color: #0c0f11; background-repeat: no-repeat; }
+.icon.big { width: 48px; height: 48px; }
+#results { max-height: 280px; overflow-y: auto; margin-top: 6px; border: 1px solid var(--line); border-radius: 4px; }
+#results .res { display: flex; align-items: center; gap: 6px; padding: 2px 4px; cursor: pointer; border-bottom: 1px solid var(--panel2); }
+#results .res:hover { background: var(--panel2); }
+#results .res.used { opacity: .4; cursor: default; }
+#results .res span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#results .tag { font-size: 11px; color: var(--muted); }
+ul.warn { list-style: none; padding: 0; margin: 0; }
+ul.warn li { padding: 4px 6px; border-left: 3px solid var(--warn); background: var(--panel2); margin-bottom: 4px; border-radius: 0 4px 4px 0; cursor: default; }
+ul.warn li.bad { border-color: var(--bad); }
+ul.warn li.ok { border-color: var(--accent); }
+ul.warn li[data-item] { cursor: pointer; }
+.help { color: var(--muted); font-size: 12px; }
+.help b { color: var(--text); font-weight: 600; }
+kbd { background: var(--panel2); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; font-size: 11px; }
+.tabrow { display: grid; grid-template-columns: 1fr 1fr auto; gap: 4px; margin-bottom: 4px; align-items: center; }
+.tabrow .btns { display: flex; gap: 2px; }
+@media (max-width: 760px) {
+	#app { flex-direction: column; }
+	#side { width: 100%; height: 50%; border-left: 0; border-top: 1px solid var(--line); }
+}
+</style>
+</head>
+<body>
+<div id="app">
+	<div id="left">
+		<div id="tabs"></div>
+		<div id="stage">
+			<canvas id="tree"></canvas>
+			<div id="mode"></div>
+			<div id="status"></div>
+			<div id="empty">
+				<div>Open the mod's <b>Fabricator/upgrade_tree.json</b> to start.</div>
+				<button class="primary" id="btnOpenBig">Open…</button>
+			</div>
+		</div>
+	</div>
+	<div id="side">
+		<h1>Fabricator Tree Editor</h1>
+		<div class="row">
+			<button class="primary" id="btnSave" title="Ctrl+S">Save</button>
+			<button id="btnSaveAs">Save as…</button>
+			<button id="btnOpen">Open…</button>
+			<button id="btnReload" title="Read the opened file again (drops unsaved changes)">Reload</button>
+			<input type="file" id="fileInput" accept=".json,application/json" hidden>
+		</div>
+		<div class="help" id="saveInfo">Save as <b>Fabricator/upgrade_tree.json</b> in the mod folder.</div>
+
+		<h2>Selected upgrade</h2>
+		<div id="selPanel"></div>
+
+		<h2 id="addTitle">Add an upgrade</h2>
+		<div id="addPanel">
+			<input type="search" id="search" placeholder="Search Craftbot items (name or title)…">
+			<div class="row" style="margin-top:6px">
+				<label style="margin:0;display:flex;gap:4px;align-items:center;color:var(--text)"><input type="checkbox" id="afterSel" checked> requires the selected upgrade</label>
+				<label style="margin:0;display:flex;gap:4px;align-items:center;color:var(--text)"><input type="checkbox" id="hideUsed" checked> hide ones in the tree</label>
+			</div>
+			<div id="searchMode" class="info" style="display:none"></div>
+			<div id="results"></div>
+		</div>
+
+		<h2>Tabs</h2>
+		<div id="tabPanel"></div>
+
+		<h2>Checks</h2>
+		<ul class="warn" id="warnings"></ul>
+
+		<h2>How to use</h2>
+		<div class="help">
+			<b>Click an item</b> in the search list: add it to the current tab (needing the selected upgrade, if ticked).<br>
+			<b>Click an upgrade</b> in the tree: select it. <b>Drag</b> one onto another: it then requires that one (drag onto empty space: no requirements).<br>
+			<b>Right-drag</b> or <b>middle-drag</b>: pan. <b>Wheel</b>: zoom.<br>
+			<kbd>Del</kbd> delete the selected upgrade · <kbd>Ctrl+Z</kbd> undo · <kbd>Esc</kbd> cancel.<br><br>
+			The frame colour shows the dearest anchor it costs: <span style="color:var(--stable)">stable</span>, <span style="color:var(--unstable)">unstable</span>, <span style="color:var(--corrupted)">corrupted</span>. Lines only show requirements in the same tab.<br><br>
+			The tree is laid out on a grid like the game (and Pacific Drive): what an item leads to sits in the cells around it, carrying on outward. Separate trees keep the order of the list: use <b>Move up/down</b> to reorder them.<br><br>
+			A recipe Survival unlocks from the start is <b>locked</b> while it's in the tree (it has to be unlocked here); take it out and it's free again.<br><br>
+			Your work is kept in this browser between visits. After saving, clear the game's Cache folder before launching. Old saves keep what they already unlocked.
+		</div>
+	</div>
+</div>
+
+<script>
+"use strict";
+
+// ---- Game constants (Fabricator.lua, layouts.lua) ---------------------------
+const TREE_COLUMN = 108, TREE_ROW = 108, NODE_SIZE = 74; // cl_buildTree
+const KINDS = [
+	{ name: "stable", title: "Stable", colour: "--stable" },
+	{ name: "unstable", title: "Unstable", colour: "--unstable" },
+	{ name: "corrupted", title: "Corrupted", colour: "--corrupted" },
+];
+const GUI_TABS = 5; // tab buttons in Gui/JsonGuis/Fabricator.gui
+const STORAGE_KEY = "pacificscrap.fabricatorTree";
+const FILE_NAME = "upgrade_tree.json";
+
+const byUuid = {};
+for (const item of CATALOG) byUuid[item.uuid] = item;
+const iconImages = ICON_MAPS.map(m => { const img = new Image(); img.src = m.file; img.onload = () => draw(); return img; });
+
+let doc = null;          // { tabs: [{ name, caption }], upgrades: [{ tab, item, cost, requires?, extras? }] }
+let activeTab = null;
+let selected = null;     // item uuid of the selected upgrade
+let searchMode = "add";  // add | replace | extra | require
+let undoStack = [];
+let dirty = false;
+let fileHandle = null;
+let view = { x: 0, y: 0, zoom: 1 }, fitted = false;
+let layout = { nodes: [], byItem: {} };
+
+const canvas = document.getElementById("tree");
+const ctx = canvas.getContext("2d");
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+// ---- Helpers ----------------------------------------------------------------
+// (an item with no recipe isn't in the catalog: the name from the file then)
+const fileNames = {};
+function title(uuid) { const c = byUuid[uuid]; return c ? c.title : (fileNames[uuid] || uuid); }
+function itemName(uuid) { const c = byUuid[uuid]; return c && c.name ? c.name : (fileNames[uuid] || ""); }
+function upgradeOf(uuid) { return doc.upgrades.find(u => u.item === uuid); }
+function requiresOf(u) { return Array.isArray(u.requires) ? u.requires : (u.requires ? [u.requires] : []); }
+function dearest(u) {
+	for (let i = KINDS.length - 1; i >= 0; i--) if ((u.cost || {})[KINDS[i].name] > 0) return KINDS[i];
+	return null;
+}
+function costText(u) {
+	const parts = KINDS.filter(k => (u.cost || {})[k.name] > 0).map(k => u.cost[k.name] + " " + k.title.toLowerCase());
+	return parts.length ? parts.join(", ") : "free";
+}
+function iconStyle(el, uuid, size) {
+	const c = byUuid[uuid];
+	if (!c || !c.icon) return;
+	const m = ICON_MAPS[c.icon[0]];
+	const s = size / m.size;
+	el.style.backgroundImage = "url('" + m.file + "')";
+	el.style.backgroundPosition = (-c.icon[1] * s) + "px " + (-c.icon[2] * s) + "px";
+	el.style.backgroundSize = "auto";
+	// (scale the whole map so one cell fits)
+	const img = iconImages[c.icon[0]];
+	if (img.naturalWidth) el.style.backgroundSize = (img.naturalWidth * s) + "px " + (img.naturalHeight * s) + "px";
+	else img.addEventListener("load", () => { el.style.backgroundSize = (img.naturalWidth * s) + "px " + (img.naturalHeight * s) + "px"; }, { once: true });
+}
+function iconEl(uuid, big) {
+	const d = document.createElement("div");
+	d.className = "icon" + (big ? " big" : "");
+	iconStyle(d, uuid, big ? 48 : 28);
+	return d;
+}
+function el(tag, props, ...kids) {
+	const e = document.createElement(tag);
+	Object.assign(e, props || {});
+	for (const k of kids) if (k != null) e.append(k);
+	return e;
+}
+
+// ---- Undo / storage ---------------------------------------------------------
+function snapshot() { return JSON.stringify(Object.assign({}, doc, { names: fileNames })); }
+function pushUndo() {
+	undoStack.push(JSON.stringify({ doc, activeTab, selected }));
+	if (undoStack.length > 200) undoStack.shift();
+}
+function undo() {
+	if (!undoStack.length) return;
+	const s = JSON.parse(undoStack.pop());
+	doc = s.doc; activeTab = s.activeTab; selected = s.selected;
+	changed();
+}
+function changed() {
+	dirty = true;
+	try { localStorage.setItem(STORAGE_KEY, snapshot()); } catch (e) { /* storage off: fine */ }
+	refresh();
+}
+function refresh() {
+	if (doc && !doc.tabs.some(t => t.name === activeTab)) activeTab = doc.tabs.length ? doc.tabs[0].name : null;
+	if (doc && selected && !upgradeOf(selected)) selected = null;
+	document.getElementById("empty").style.display = doc ? "none" : "flex";
+	buildTabs(); computeLayout(); draw(); buildPanel(); buildSearch(); buildTabPanel(); buildWarnings();
+}
+
+// ---- Layout (same as Fabricator.cl_buildTree) -------------------------------
+// A grid like Pacific Drive's fabrication station: what an upgrade leads to
+// goes in the free cell next to it, keeping the same heading if it can
+function computeLayout() {
+	layout = { nodes: [], byItem: {}, w: 0, h: 0 };
+	if (!doc) return;
+	const list = [], inTab = {};
+	doc.upgrades.forEach((u, index) => { if (u.tab === activeTab) { inTab[u.item] = index; list.push(index); } });
+	const parents = {}, children = {};
+	for (const index of list) {
+		parents[index] = [];
+		for (const item of requiresOf(doc.upgrades[index])) {
+			const parent = inTab[item];
+			if (parent !== undefined && parent !== index) {
+				parents[index].push(parent);
+				(children[parent] = children[parent] || []).push(index);
+			}
+		}
+	}
+	const cellOf = {};
+	const key = (x, y) => x + "," + y;
+	const AROUND = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
+	function freeNear(taken, x, y, hx, hy) {
+		let start = 0;
+		AROUND.forEach((d, i) => { if (d[0] === hx && d[1] === hy) start = i; });
+		for (let turn = 0; turn <= 4; turn++) {
+			for (const side of (turn === 0 ? [0] : [-turn, turn])) {
+				const d = AROUND[((start + side) % 8 + 8) % 8];
+				if (!taken[key(x + d[0], y + d[1])]) return [x + d[0], y + d[1], d[0], d[1]];
+			}
+		}
+		for (let r = 2; r <= 12; r++)
+			for (let dx = r; dx >= -r; dx--)
+				for (let dy = -r; dy <= r; dy++)
+					if (Math.max(Math.abs(dx), Math.abs(dy)) === r && !taken[key(x + dx, y + dy)]) return [x + dx, y + dy, Math.sign(dx), Math.sign(dy)];
+		return [x + 13, y, 1, 0];
+	}
+	// Each tree on its own, then packed in rows like tiles (same as the game)
+	const trees = [], placed = {};
+	function layOut(rootIndex) {
+		const members = {}, taken = {}, heading = {};
+		const put = (index, x, y) => { members[index] = { x, y }; taken[key(x, y)] = true; placed[index] = true; };
+		put(rootIndex, 0, 0);
+		heading[rootIndex] = [1, 0];
+		const queue = [rootIndex];
+		for (let at = 0; at < queue.length; at++) {
+			const index = queue[at];
+			for (const kid of children[index] || []) {
+				if (placed[kid]) continue;
+				const c = members[index], h = heading[index];
+				const [x, y, hx, hy] = freeNear(taken, c.x, c.y, h[0], h[1]);
+				put(kid, x, y);
+				heading[kid] = [hx, hy];
+				queue.push(kid);
+			}
+		}
+		const cs = Object.values(members);
+		const minX = Math.min(...cs.map(c => c.x)), minY = Math.min(...cs.map(c => c.y));
+		trees.push({ members, minX, minY, w: Math.max(...cs.map(c => c.x)) - minX + 1, h: Math.max(...cs.map(c => c.y)) - minY + 1 });
+	}
+	for (const index of list) if (!parents[index].length && !placed[index]) layOut(index);
+	for (const index of list) if (!placed[index]) layOut(index);
+	let area = 0, widest = 0;
+	for (const t of trees) { area += (t.w + 1) * (t.h + 1); widest = Math.max(widest, t.w); }
+	const rowWidth = Math.max(widest, Math.ceil(Math.sqrt(area * 2)));
+	let penX = 0, penY = 0, shelf = 0;
+	for (const t of trees) {
+		if (penX > 0 && penX + t.w > rowWidth) { penX = 0; penY += shelf + 1; shelf = 0; }
+		for (const [index, c] of Object.entries(t.members)) cellOf[index] = { x: penX + c.x - t.minX, y: penY + c.y - t.minY };
+		penX += t.w + 1;
+		shelf = Math.max(shelf, t.h);
+	}
+	const cells = Object.values(cellOf);
+	const minX = Math.min(...cells.map(c => c.x)), maxX = Math.max(...cells.map(c => c.x));
+	const minY = Math.min(...cells.map(c => c.y)), maxY = Math.max(...cells.map(c => c.y));
+	for (const index of list) {
+		const u = doc.upgrades[index], c = cellOf[index];
+		const node = { index, u, x: (c.x - minX) * TREE_COLUMN, y: (c.y - minY) * TREE_ROW, parents: parents[index].map(p => doc.upgrades[p].item) };
+		layout.nodes.push(node);
+		layout.byItem[u.item] = node;
+	}
+	layout.w = list.length ? (maxX - minX) * TREE_COLUMN + NODE_SIZE : NODE_SIZE;
+	layout.h = list.length ? (maxY - minY) * TREE_ROW + NODE_SIZE : NODE_SIZE;
+}
+
+// ---- View ---------------------------------------------------------------
+function resize() {
+	const r = canvas.getBoundingClientRect();
+	const dpr = window.devicePixelRatio || 1;
+	canvas.width = Math.max(1, Math.round(r.width * dpr));
+	canvas.height = Math.max(1, Math.round(r.height * dpr));
+	ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+	if (!fitted) fitView();
+	draw();
+}
+function fitView() {
+	const r = canvas.getBoundingClientRect();
+	if (!layout.nodes.length || !r.width) return;
+	const pad = 40;
+	view.zoom = Math.max(Math.min((r.width - pad * 2) / layout.w, (r.height - pad * 2) / layout.h, 1.4), 0.25);
+	view.x = layout.w / 2; view.y = layout.h / 2;
+	fitted = true;
+}
+function toScreen(x, y) {
+	const r = canvas.getBoundingClientRect();
+	return [(x - view.x) * view.zoom + r.width / 2, (y - view.y) * view.zoom + r.height / 2];
+}
+function toTree(sx, sy) {
+	const r = canvas.getBoundingClientRect();
+	return [(sx - r.width / 2) / view.zoom + view.x, (sy - r.height / 2) / view.zoom + view.y];
+}
+function nodeAt(sx, sy) {
+	const [x, y] = toTree(sx, sy);
+	return layout.nodes.find(n => x >= n.x && x <= n.x + NODE_SIZE && y >= n.y && y <= n.y + NODE_SIZE);
+}
+
+let drag = null; // { kind: "pan" | "node", ... }
+function draw() {
+	const r = canvas.getBoundingClientRect();
+	ctx.clearRect(0, 0, r.width, r.height);
+	ctx.fillStyle = "#101315"; ctx.fillRect(0, 0, r.width, r.height);
+	if (!doc) return;
+	const z = view.zoom, s = NODE_SIZE * z;
+	// Requirement lines (straight, centre to centre, like the game)
+	ctx.lineWidth = Math.max(1, 3 * z);
+	for (const n of layout.nodes) {
+		for (const p of n.parents) {
+			const pn = layout.byItem[p];
+			const [x1, y1] = toScreen(pn.x + NODE_SIZE / 2, pn.y + NODE_SIZE / 2);
+			const [x2, y2] = toScreen(n.x + NODE_SIZE / 2, n.y + NODE_SIZE / 2);
+			const hot = selected && (selected === p || selected === n.u.item);
+			ctx.strokeStyle = hot ? css("--accent") : "#4a565f";
+			ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+		}
+	}
+	// Nodes
+	for (const n of layout.nodes) {
+		let [x, y] = toScreen(n.x, n.y);
+		if (drag && drag.kind === "node" && drag.moved && drag.item === n.u.item) { x = drag.sx - s / 2; y = drag.sy - s / 2; ctx.globalAlpha = 0.7; }
+		const kind = dearest(n.u);
+		const frame = kind ? css(kind.colour) : "#7a868e";
+		const border = Math.max(2, 4 * z);
+		ctx.fillStyle = frame; ctx.fillRect(x - border, y - border, s + border * 2, s + border * 2);
+		ctx.fillStyle = "#1a1f23"; ctx.fillRect(x, y, s, s);
+		const c = byUuid[n.u.item];
+		if (c && c.icon && iconImages[c.icon[0]].complete && iconImages[c.icon[0]].naturalWidth) {
+			const m = ICON_MAPS[c.icon[0]];
+			ctx.drawImage(iconImages[c.icon[0]], c.icon[1], c.icon[2], m.size, m.size, x + 2, y + 2, s - 4, s - 4);
+		} else {
+			ctx.fillStyle = css("--muted"); ctx.font = Math.max(8, 11 * z) + "px system-ui"; ctx.textAlign = "center";
+			wrapText(title(n.u.item), x + s / 2, y + s / 2 - 6 * z, s - 6, 12 * z);
+		}
+		if (selected === n.u.item) {
+			ctx.strokeStyle = "#fff"; ctx.lineWidth = Math.max(2, 3 * z);
+			ctx.strokeRect(x - border - 3, y - border - 3, s + border * 2 + 6, s + border * 2 + 6);
+		}
+		if (!byUuid[n.u.item]) { ctx.fillStyle = css("--bad"); ctx.fillRect(x + s - 12 * z, y, 12 * z, 12 * z); }
+		if (z > 0.55) {
+			ctx.fillStyle = css("--text"); ctx.font = (11 * Math.min(z, 1.2)) + "px system-ui"; ctx.textAlign = "center";
+			ctx.fillText(shortTitle(title(n.u.item)), x + s / 2, y + s + border + 12 * Math.min(z, 1.2));
+			ctx.fillStyle = css("--muted");
+			ctx.fillText(KINDS.filter(k => (n.u.cost || {})[k.name] > 0).map(k => n.u.cost[k.name] + k.title[0]).join(" ") || "free", x + s / 2, y + s + border + 24 * Math.min(z, 1.2));
+		}
+		ctx.globalAlpha = 1;
+	}
+	// Drop target while dragging
+	if (drag && drag.kind === "node" && drag.moved) {
+		const target = nodeAt(drag.sx, drag.sy);
+		setStatus(target && target.u.item !== drag.item ? "Drop: " + title(drag.item) + " requires " + title(target.u.item) : "Drop on empty space: no requirements");
+	}
+}
+function shortTitle(t) { return t.length > 18 ? t.slice(0, 17) + "…" : t; }
+function wrapText(text, x, y, w, lh) {
+	const words = text.split(" "); let line = "", lines = [];
+	for (const word of words) { const t = line ? line + " " + word : word; if (ctx.measureText(t).width > w && line) { lines.push(line); line = word; } else line = t; }
+	lines.push(line);
+	lines.slice(0, 3).forEach((l, i) => ctx.fillText(l, x, y + i * lh));
+}
+
+// ---- Mouse ----------------------------------------------------------------
+canvas.addEventListener("contextmenu", e => e.preventDefault());
+canvas.addEventListener("mousedown", e => {
+	const r = canvas.getBoundingClientRect();
+	const sx = e.clientX - r.left, sy = e.clientY - r.top;
+	if (e.button === 1 || e.button === 2) { drag = { kind: "pan", sx, sy, vx: view.x, vy: view.y }; return; }
+	const n = nodeAt(sx, sy);
+	if (searchMode === "require" && n) {
+		toggleRequirement(selected, n.u.item);
+		return;
+	}
+	if (n) { selected = n.u.item; drag = { kind: "node", item: n.u.item, sx, sy, x0: sx, y0: sy, moved: false }; refresh(); }
+	else { drag = { kind: "pan", sx, sy, vx: view.x, vy: view.y }; }
+});
+window.addEventListener("mousemove", e => {
+	const r = canvas.getBoundingClientRect();
+	const sx = e.clientX - r.left, sy = e.clientY - r.top;
+	if (!drag) {
+		const n = doc && nodeAt(sx, sy);
+		if (sx >= 0 && sy >= 0 && sx <= r.width && sy <= r.height) setStatus(n ? title(n.u.item) + " · " + costText(n.u) + (itemName(n.u.item) ? " · " + itemName(n.u.item) : "") : "");
+		return;
+	}
+	if (drag.kind === "pan") {
+		view.x = drag.vx - (sx - drag.sx) / view.zoom;
+		view.y = drag.vy - (sy - drag.sy) / view.zoom;
+		draw();
+	} else {
+		drag.sx = sx; drag.sy = sy;
+		if (Math.hypot(sx - drag.x0, sy - drag.y0) > 6) drag.moved = true;
+		if (drag.moved) draw();
+	}
+});
+window.addEventListener("mouseup", () => {
+	if (drag && drag.kind === "node" && drag.moved) {
+		const target = nodeAt(drag.sx, drag.sy);
+		const u = upgradeOf(drag.item);
+		pushUndo();
+		if (target && target.u.item !== drag.item) {
+			if (dependsOn(target.u.item, drag.item)) { alert("That would make a loop: " + title(target.u.item) + " already needs " + title(drag.item) + "."); undoStack.pop(); }
+			else u.requires = [target.u.item];
+		} else {
+			delete u.requires;
+		}
+		drag = null;
+		changed();
+		return;
+	}
+	drag = null;
+	draw();
+});
+canvas.addEventListener("wheel", e => {
+	e.preventDefault();
+	const r = canvas.getBoundingClientRect();
+	const sx = e.clientX - r.left, sy = e.clientY - r.top;
+	const [tx, ty] = toTree(sx, sy);
+	view.zoom = Math.max(0.2, Math.min(2.5, view.zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15)));
+	view.x = tx - (sx - r.width / 2) / view.zoom;
+	view.y = ty - (sy - r.height / 2) / view.zoom;
+	draw();
+}, { passive: false });
+
+// Does `a` (directly or further back) require `b`?
+function dependsOn(a, b, seen) {
+	if (a === b) return true;
+	seen = seen || {};
+	if (seen[a]) return false;
+	seen[a] = true;
+	const u = upgradeOf(a);
+	return !!u && requiresOf(u).some(r => dependsOn(r, b, seen));
+}
+function toggleRequirement(item, req) {
+	const u = upgradeOf(item);
+	if (!u || req === item) return;
+	const list = requiresOf(u).slice();
+	pushUndo();
+	if (list.includes(req)) list.splice(list.indexOf(req), 1);
+	else {
+		if (dependsOn(req, item)) { undoStack.pop(); alert("That would make a loop: " + title(req) + " already needs " + title(item) + "."); return; }
+		list.push(req);
+	}
+	if (list.length) u.requires = list; else delete u.requires;
+	changed();
+}
+
+// ---- Tabs strip ---------------------------------------------------------
+function buildTabs() {
+	const box = document.getElementById("tabs");
+	box.innerHTML = "";
+	if (!doc) return;
+	doc.tabs.forEach((t, i) => {
+		const count = doc.upgrades.filter(u => u.tab === t.name).length;
+		const b = el("button", { textContent: (t.caption || t.name) + " (" + count + ")", title: i >= GUI_TABS ? "Only the first " + GUI_TABS + " tabs show in the game" : t.name });
+		if (t.name === activeTab) b.classList.add("on");
+		if (i >= GUI_TABS) b.classList.add("over");
+		b.onclick = () => { activeTab = t.name; fitted = false; refresh(); fitView(); draw(); };
+		box.append(b);
+	});
+}
+
+// ---- Selected panel ---------------------------------------------------------
+function buildPanel() {
+	const p = document.getElementById("selPanel");
+	p.innerHTML = "";
+	const u = doc && selected && upgradeOf(selected);
+	if (!u) { p.append(el("div", { className: "muted", textContent: doc ? "Click an upgrade in the tree." : "Nothing open." })); return; }
+	const c = byUuid[u.item];
+	const head = el("div", { className: "row" }, iconEl(u.item, true),
+		el("div", { style: "flex:1;min-width:0" },
+			el("div", { style: "font-weight:600", textContent: title(u.item) }),
+			el("div", { className: "muted", style: "font-size:12px;word-break:break-all", textContent: (itemName(u.item) || "") + (c ? (c.bench === "sawtable" ? " · Saw Table" : " · Craftbot") : " · no recipe!") + (c && c.default ? " · free in Survival (locked here)" : "") })));
+	p.append(head);
+
+	// Cost
+	p.append(el("label", { textContent: "Cost (energy anchors)" }));
+	const costs = el("div", { className: "costs" });
+	for (const k of KINDS) {
+		const input = el("input", { type: "number", min: 0, max: 99, value: (u.cost || {})[k.name] || 0 });
+		input.style.borderColor = css(k.colour);
+		input.onchange = () => {
+			pushUndo();
+			u.cost = u.cost || {};
+			const v = Math.max(0, Math.round(+input.value || 0));
+			if (v > 0) u.cost[k.name] = v; else delete u.cost[k.name];
+			changed();
+		};
+		costs.append(el("label", { textContent: k.title }, input));
+	}
+	p.append(costs);
+
+	// Tab
+	p.append(el("label", { textContent: "Tab" }));
+	const tabSel = el("select");
+	for (const t of doc.tabs) tabSel.append(el("option", { value: t.name, textContent: t.caption || t.name, selected: t.name === u.tab }));
+	tabSel.onchange = () => { pushUndo(); u.tab = tabSel.value; activeTab = u.tab; changed(); };
+	p.append(tabSel);
+
+	// Requires
+	p.append(el("label", { textContent: "Requires (all of them)" }));
+	const reqs = el("div", { className: "chips" });
+	for (const r of requiresOf(u)) {
+		const other = upgradeOf(r);
+		const chip = el("div", { className: "chip" }, iconEl(r), el("span", { textContent: title(r) + (other ? (other.tab !== u.tab ? "  (" + other.tab + " tab)" : "") : "  (not in the tree!)") }));
+		const x = el("button", { className: "small danger", textContent: "✕", title: "Remove" });
+		x.onclick = () => toggleRequirement(u.item, r);
+		chip.append(x);
+		reqs.append(chip);
+	}
+	if (!requiresOf(u).length) reqs.append(el("div", { className: "muted", textContent: "Nothing: available from the start." }));
+	p.append(reqs);
+	const reqRow = el("div", { className: "row", style: "margin-top:4px" });
+	const pick = el("button", { textContent: searchMode === "require" ? "Done picking" : "Pick in tree…", title: "Then click upgrades in the tree to add or remove them" });
+	pick.onclick = () => setSearchMode(searchMode === "require" ? "add" : "require");
+	const other = el("select", { style: "flex:1" });
+	other.append(el("option", { value: "", textContent: "Add one from any tab…" }));
+	for (const t of doc.tabs) {
+		const g = el("optgroup", { label: t.caption || t.name });
+		for (const o of doc.upgrades.filter(o => o.tab === t.name && o.item !== u.item && !requiresOf(u).includes(o.item))) g.append(el("option", { value: o.item, textContent: title(o.item) }));
+		other.append(g);
+	}
+	other.onchange = () => { if (other.value) toggleRequirement(u.item, other.value); };
+	reqRow.append(pick, other);
+	p.append(reqRow);
+
+	// Extras
+	p.append(el("label", { textContent: "Also unlocks" }));
+	const extras = el("div", { className: "chips" });
+	for (const x of u.extras || []) {
+		const chip = el("div", { className: "chip" }, iconEl(x), el("span", { textContent: title(x) }));
+		const b = el("button", { className: "small danger", textContent: "✕", title: "Remove" });
+		b.onclick = () => { pushUndo(); u.extras = u.extras.filter(e => e !== x); if (!u.extras.length) delete u.extras; changed(); };
+		chip.append(b);
+		extras.append(chip);
+	}
+	if (!(u.extras || []).length) extras.append(el("div", { className: "muted", textContent: "Nothing else." }));
+	p.append(extras);
+
+	const row = el("div", { className: "row", style: "margin-top:8px" });
+	const addExtra = el("button", { textContent: "Add extra…" }); addExtra.onclick = () => setSearchMode("extra");
+	const replace = el("button", { textContent: "Change item…" }); replace.onclick = () => setSearchMode("replace");
+	const up = el("button", { textContent: "Move up", title: "Earlier in the list: top-level branches keep this order" }); up.onclick = () => move(u, -1);
+	const down = el("button", { textContent: "Move down" }); down.onclick = () => move(u, 1);
+	const del = el("button", { className: "danger", textContent: "Delete", title: "Del" }); del.onclick = () => deleteSelected();
+	row.append(addExtra, replace, up, down, del);
+	p.append(row);
+}
+function move(u, dir) {
+	// (among the upgrades of the same tab)
+	const same = doc.upgrades.map((o, i) => [o, i]).filter(([o]) => o.tab === u.tab);
+	const at = same.findIndex(([o]) => o === u);
+	const to = same[at + dir];
+	if (!to) return;
+	pushUndo();
+	const i = doc.upgrades.indexOf(u), j = to[1];
+	doc.upgrades[i] = to[0]; doc.upgrades[j] = u;
+	changed();
+}
+function deleteSelected() {
+	const u = selected && upgradeOf(selected);
+	if (!u) return;
+	pushUndo();
+	doc.upgrades = doc.upgrades.filter(o => o !== u);
+	// (what needed it now needs what it needed)
+	for (const o of doc.upgrades) {
+		const list = requiresOf(o);
+		if (list.includes(u.item)) {
+			const next = list.filter(r => r !== u.item);
+			for (const r of requiresOf(u)) if (!next.includes(r) && r !== o.item) next.push(r);
+			if (next.length) o.requires = next; else delete o.requires;
+		}
+	}
+	selected = null;
+	changed();
+}
+
+// ---- Search / add ---------------------------------------------------------
+function setSearchMode(mode) {
+	searchMode = mode;
+	const m = { add: "", replace: "Pick the new item for " + title(selected), extra: "Pick an item " + title(selected) + " also unlocks", require: "Click upgrades in the tree: " + title(selected) + " requires them (click again to remove)" }[mode];
+	showMode(mode === "require" ? m : "");
+	refresh();
+	if (mode === "replace" || mode === "extra") document.getElementById("search").focus();
+}
+function inTreeSet() {
+	const set = {};
+	if (!doc) return set;
+	for (const u of doc.upgrades) { set[u.item] = "tree"; for (const x of u.extras || []) set[x] = set[x] || "extra"; }
+	return set;
+}
+function buildSearch() {
+	const box = document.getElementById("results");
+	const sm = document.getElementById("searchMode");
+	document.getElementById("addTitle").textContent = { add: "Add an upgrade", replace: "Change item", extra: "Add an extra", require: "Add an upgrade" }[searchMode];
+	if (searchMode === "replace" || searchMode === "extra") {
+		sm.style.display = "block";
+		sm.innerHTML = "";
+		sm.append(el("span", { textContent: searchMode === "replace" ? "Click the item that replaces " + title(selected) + ". " : "Click an item that " + title(selected) + " also unlocks. " }));
+		const cancel = el("button", { className: "small", textContent: "Cancel" }); cancel.onclick = () => setSearchMode("add");
+		sm.append(cancel);
+	} else sm.style.display = "none";
+	box.innerHTML = "";
+	if (!doc) return;
+	const q = document.getElementById("search").value.trim().toLowerCase();
+	const hide = document.getElementById("hideUsed").checked;
+	const used = inTreeSet();
+	let shown = 0;
+	for (const c of CATALOG) {
+		if (q && !c.title.toLowerCase().includes(q) && !c.name.toLowerCase().includes(q)) continue;
+		if (hide && used[c.uuid] && !q) continue;
+		const row = el("div", { className: "res" + (used[c.uuid] ? " used" : "") }, iconEl(c.uuid), el("span", { textContent: c.title, title: c.name }),
+			el("span", { className: "tag", style: "flex:none", textContent: used[c.uuid] ? (used[c.uuid] === "tree" ? "in tree" : "extra") : (c.default ? "free" : "") }));
+		if (!used[c.uuid]) row.onclick = () => pickItem(c.uuid);
+		box.append(row);
+		if (++shown >= 200) { box.append(el("div", { className: "muted", style: "padding:4px", textContent: "…type to narrow it down" })); break; }
+	}
+	if (!shown) box.append(el("div", { className: "muted", style: "padding:4px", textContent: "No items match." }));
+}
+function pickItem(uuid) {
+	const sel = selected && upgradeOf(selected);
+	pushUndo();
+	if (searchMode === "replace" && sel) {
+		const old = sel.item;
+		sel.item = uuid;
+		for (const o of doc.upgrades) if (requiresOf(o).includes(old)) o.requires = requiresOf(o).map(r => r === old ? uuid : r);
+		selected = uuid;
+		searchMode = "add";
+	} else if (searchMode === "extra" && sel) {
+		sel.extras = (sel.extras || []).concat([uuid]);
+		searchMode = "add";
+	} else {
+		if (!activeTab) { undoStack.pop(); alert("Add a tab first."); return; }
+		const u = { tab: activeTab, item: uuid, cost: { stable: 1 } };
+		if (sel && document.getElementById("afterSel").checked) u.requires = [sel.item];
+		// (right after the selected one, else at the end of the tab)
+		let at = sel ? doc.upgrades.indexOf(sel) + 1 : -1;
+		if (at < 0) { doc.upgrades.forEach((o, i) => { if (o.tab === activeTab) at = i + 1; }); if (at < 0) at = doc.upgrades.length; }
+		doc.upgrades.splice(at, 0, u);
+		selected = uuid;
+	}
+	showMode("");
+	changed();
+}
+document.getElementById("search").addEventListener("input", buildSearch);
+document.getElementById("hideUsed").addEventListener("change", buildSearch);
+
+// ---- Tabs panel -----------------------------------------------------------
+function buildTabPanel() {
+	const p = document.getElementById("tabPanel");
+	p.innerHTML = "";
+	if (!doc) return;
+	p.append(el("div", { className: "tabrow muted", style: "font-size:12px" }, el("span", { textContent: "Name (in the file)" }), el("span", { textContent: "Caption (on the button)" }), el("span")));
+	doc.tabs.forEach((t, i) => {
+		const name = el("input", { type: "text", value: t.name });
+		name.onchange = () => {
+			const v = name.value.trim();
+			if (!v || doc.tabs.some(o => o !== t && o.name === v)) { name.value = t.name; return; }
+			pushUndo();
+			for (const u of doc.upgrades) if (u.tab === t.name) u.tab = v;
+			if (activeTab === t.name) activeTab = v;
+			t.name = v;
+			changed();
+		};
+		const cap = el("input", { type: "text", value: t.caption || "" });
+		cap.onchange = () => { pushUndo(); t.caption = cap.value.trim() || t.name.toUpperCase(); changed(); };
+		const up = el("button", { className: "small", textContent: "▲", disabled: i === 0 });
+		up.onclick = () => { pushUndo(); doc.tabs.splice(i - 1, 0, doc.tabs.splice(i, 1)[0]); changed(); };
+		const down = el("button", { className: "small", textContent: "▼", disabled: i === doc.tabs.length - 1 });
+		down.onclick = () => { pushUndo(); doc.tabs.splice(i + 1, 0, doc.tabs.splice(i, 1)[0]); changed(); };
+		const del = el("button", { className: "small danger", textContent: "✕", disabled: doc.tabs.length === 1 });
+		del.onclick = () => {
+			const count = doc.upgrades.filter(u => u.tab === t.name).length;
+			if (count && !confirm("Delete the " + (t.caption || t.name) + " tab and its " + count + " upgrades? (Undo can bring it back)")) return;
+			pushUndo();
+			doc.upgrades = doc.upgrades.filter(u => u.tab !== t.name);
+			doc.tabs.splice(i, 1);
+			changed();
+		};
+		p.append(el("div", { className: "tabrow" }, name, cap, el("div", { className: "btns" }, up, down, del)));
+	});
+	const add = el("button", { textContent: "Add tab" });
+	add.onclick = () => {
+		let n = 1; while (doc.tabs.some(t => t.name === "Tab" + n)) n++;
+		pushUndo();
+		doc.tabs.push({ name: "Tab" + n, caption: "TAB " + n });
+		activeTab = "Tab" + n;
+		changed();
+	};
+	p.append(el("div", { className: "row", style: "margin-top:4px" }, add, el("span", { className: "muted", textContent: "The game shows the first " + GUI_TABS + "." })));
+}
+
+// ---- Checks -----------------------------------------------------------------
+function buildWarnings() {
+	const ul = document.getElementById("warnings");
+	ul.innerHTML = "";
+	if (!doc) return;
+	const out = [];
+	const add = (level, text, item) => out.push({ level, text, item });
+	const tabNames = new Set(doc.tabs.map(t => t.name));
+	const seen = {};
+	if (doc.tabs.length > GUI_TABS) add("warn", "More than " + GUI_TABS + " tabs: only the first " + GUI_TABS + " show in the game.");
+	for (const u of doc.upgrades) {
+		const t = title(u.item);
+		if (!tabNames.has(u.tab)) add("bad", t + ": its tab \"" + u.tab + "\" doesn't exist (it won't show).", u.item);
+		if (!byUuid[u.item]) add("warn", t + ": no Craftbot or Saw Table recipe, so unlocking it does nothing.", u.item);
+		if (seen[u.item]) add("bad", t + " is in the tree twice.", u.item);
+		seen[u.item] = true;
+		if (!dearest(u)) add("warn", t + " costs nothing.", u.item);
+		for (const r of requiresOf(u)) {
+			if (!upgradeOf(r)) add("bad", t + " requires " + title(r) + ", which isn't in the tree: it can never be unlocked.", u.item);
+			else if (dependsOn(r, u.item)) add("bad", t + " is in a requirement loop: it can never be unlocked.", u.item);
+		}
+		for (const x of u.extras || []) {
+			if (upgradeOf(x)) add("warn", title(x) + " is an extra of " + t + " and an upgrade of its own.", u.item);
+		}
+	}
+	for (const tab of doc.tabs) if (!doc.upgrades.some(u => u.tab === tab.name)) add("warn", "The " + (tab.caption || tab.name) + " tab is empty.");
+	const used = inTreeSet();
+	const locked = CATALOG.filter(c => c.default && used[c.uuid]).length;
+	const free = CATALOG.filter(c => c.default && !used[c.uuid]).length;
+	add("ok", doc.upgrades.length + " upgrades in " + doc.tabs.length + " tabs. " + locked + " of Survival's starting recipes are locked by the tree; " + free + " stay free.");
+	for (const w of out) {
+		const li = el("li", { className: w.level === "bad" ? "bad" : w.level === "ok" ? "ok" : "", textContent: w.text });
+		if (w.item) { li.dataset.item = w.item; li.onclick = () => { const u = upgradeOf(w.item); if (u) { activeTab = u.tab; selected = u.item; refresh(); fitView(); draw(); } }; }
+		ul.append(li);
+	}
+}
+
+// ---- Files ----------------------------------------------------------------
+// One upgrade per line, item names filled in, so the file reads well in a diff
+function serialise() {
+	const clean = u => {
+		const o = { name: itemName(u.item) || undefined, tab: u.tab, item: u.item, cost: {} };
+		for (const k of KINDS) if ((u.cost || {})[k.name] > 0) o.cost[k.name] = u.cost[k.name];
+		if (requiresOf(u).length) o.requires = requiresOf(u);
+		if ((u.extras || []).length) o.extras = u.extras;
+		return o;
+	};
+	const lines = ["{", "\t\"tabs\": ["];
+	doc.tabs.forEach((t, i) => lines.push("\t\t" + JSON.stringify({ name: t.name, caption: t.caption || t.name.toUpperCase() }).replace(/":/g, "\": ").replace(/,"/g, ", \"") + (i < doc.tabs.length - 1 ? "," : "")));
+	lines.push("\t],", "\t\"upgrades\": [");
+	doc.upgrades.forEach((u, i) => lines.push("\t\t" + JSON.stringify(clean(u)).replace(/":/g, "\": ").replace(/,"/g, ", \"") + (i < doc.upgrades.length - 1 ? "," : "")));
+	lines.push("\t]", "}", "");
+	return lines.join("\n");
+}
+function load(text) {
+	const data = JSON.parse(text);
+	if (!data || !Array.isArray(data.tabs) || !Array.isArray(data.upgrades)) throw new Error("No tabs and upgrades in this file");
+	const tabs = data.tabs.filter(t => t && typeof t.name === "string").map(t => ({ name: t.name, caption: t.caption || t.name.toUpperCase() }));
+	for (const u of data.upgrades) if (u && typeof u.name === "string" && u.name) fileNames[u.item] = u.name;
+	const upgrades = data.upgrades.filter(u => u && typeof u.item === "string" && typeof u.tab === "string").map(u => {
+		const o = { tab: u.tab, item: u.item, cost: Object.assign({}, u.cost || {}) };
+		const req = Array.isArray(u.requires) ? u.requires : (u.requires ? [u.requires] : []);
+		if (req.length) o.requires = req.slice();
+		if (Array.isArray(u.extras) && u.extras.length) o.extras = u.extras.slice();
+		return o;
+	});
+	if (doc) pushUndo();
+	doc = { tabs, upgrades };
+	activeTab = tabs.length ? tabs[0].name : null;
+	selected = null;
+	fitted = false;
+	changed();
+	dirty = false;
+	fitView(); draw();
+}
+async function save(askWhere) {
+	if (!doc) return;
+	const text = serialise();
+	if (window.showSaveFilePicker) {
+		try {
+			if (!fileHandle || askWhere) {
+				fileHandle = await window.showSaveFilePicker({ suggestedName: FILE_NAME, types: [{ description: "Fabricator tree", accept: { "application/json": [".json"] } }] });
+			}
+			const w = await fileHandle.createWritable();
+			await w.write(text); await w.close();
+			// (read it back: a save that didn't take shouldn't look like it did)
+			const back = await (await fileHandle.getFile()).text();
+			if (back !== text) {
+				alert("The file didn't save properly (it reads back " + back.length + " characters instead of " + text.length + "). Your work is still here: try Save as… and pick Fabricator/upgrade_tree.json again.");
+				return;
+			}
+			dirty = false;
+			document.getElementById("saveInfo").innerHTML = "Saved to <b>" + fileHandle.name + "</b> at " + new Date().toLocaleTimeString() + ". Clear the game's Cache before launching.";
+			return;
+		} catch (e) {
+			if (e.name === "AbortError") return;
+			console.warn(e);
+		}
+	}
+	// Fallback: download it, then move it to Fabricator/upgrade_tree.json in the mod
+	const a = document.createElement("a");
+	a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+	a.download = FILE_NAME;
+	a.click();
+	setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+	dirty = false;
+	document.getElementById("saveInfo").innerHTML = "Downloaded <b>" + FILE_NAME + "</b>: move it into the mod's <b>Fabricator</b> folder.";
+}
+async function open() {
+	if (dirty && !confirm("Open another file? Unsaved changes stay in Undo.")) return;
+	if (window.showOpenFilePicker) {
+		try {
+			const [handle] = await window.showOpenFilePicker({ types: [{ description: "Fabricator tree", accept: { "application/json": [".json"] } }] });
+			load(await (await handle.getFile()).text());
+			fileHandle = handle;
+			document.getElementById("saveInfo").innerHTML = "Opened <b>" + handle.name + "</b>. Save writes back to it.";
+			return;
+		} catch (e) {
+			if (e.name === "AbortError") return;
+			if (e instanceof SyntaxError || e.message.startsWith("No tabs")) { alert("Couldn't read it: " + e.message); return; }
+		}
+	}
+	document.getElementById("fileInput").click();
+}
+async function reload() {
+	if (!fileHandle) { open(); return; }
+	if (dirty && !confirm("Read the file again and drop unsaved changes? (Undo can bring them back)")) return;
+	try { load(await (await fileHandle.getFile()).text()); document.getElementById("saveInfo").innerHTML = "Reloaded <b>" + fileHandle.name + "</b>."; }
+	catch (e) { alert("Couldn't read it: " + e.message); }
+}
+document.getElementById("fileInput").onchange = async e => {
+	const f = e.target.files[0];
+	if (!f) return;
+	try { load(await f.text()); } catch (err) { alert("Couldn't read it: " + err.message); }
+	e.target.value = "";
+};
+document.getElementById("btnSave").onclick = () => save(false);
+document.getElementById("btnSaveAs").onclick = () => save(true);
+document.getElementById("btnOpen").onclick = open;
+document.getElementById("btnOpenBig").onclick = open;
+document.getElementById("btnReload").onclick = reload;
+window.addEventListener("beforeunload", e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
+window.addEventListener("keydown", e => {
+	const typing = /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+	if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(false); return; }
+	if (typing) return;
+	if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); }
+	else if (e.key === "Delete") deleteSelected();
+	else if (e.key === "Escape") { if (searchMode !== "add") setSearchMode("add"); else { selected = null; refresh(); } }
+});
+
+// ---- Misc ---------------------------------------------------------------
+function setStatus(t) { document.getElementById("status").textContent = t; }
+function showMode(t) { const m = document.getElementById("mode"); m.textContent = t; m.style.display = t ? "block" : "none"; }
+
+try {
+	const saved = localStorage.getItem(STORAGE_KEY);
+	if (saved) {
+		const d = JSON.parse(saved);
+		if (d && Array.isArray(d.tabs) && Array.isArray(d.upgrades)) {
+			Object.assign(fileNames, d.names || {});
+			doc = { tabs: d.tabs, upgrades: d.upgrades };
+			activeTab = d.tabs.length ? d.tabs[0].name : null;
+		}
+	}
+} catch (e) { /* no storage: start with Open */ }
+if (doc) document.getElementById("saveInfo").innerHTML = "Picked up where you left off (kept in this browser). <b>Open…</b> the mod's file to save straight back to it.";
+window.addEventListener("resize", resize);
+refresh();
+resize();
+</script>
+</body>
+</html>

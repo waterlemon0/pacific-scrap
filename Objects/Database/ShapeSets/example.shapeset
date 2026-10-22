@@ -1,0 +1,334 @@
+{
+	"partList": [
+		{
+			"carryItem": true,
+			"color": "f5b830",
+			"flammable": false,
+			"name": "obj_pacificscrap_energyanchor",
+			"physicsMaterial": "Metal",
+			"ratings": {
+				"buoyancy": 7,
+				"density": 4,
+				"durability": 10,
+				"friction": 2
+			},
+			"renderable": "$CONTENT_DATA/Objects/Renderable/obj_pacificscrap_anchororb_t2.rend",
+			"restrictions": {
+				"liftable": false
+			},
+			"rotationSet": "PropY",
+			"stackSize": 1,
+			"uuid": "c243bb55-92f9-4f77-bb2a-b7c87b5a2be9",
+			"sphere": {
+				"diameter": 4
+			}
+		},
+		{
+			"carryItem": true,
+			"color": "4ed98c",
+			"flammable": false,
+			"name": "obj_pacificscrap_energyanchor_corrupted",
+			"physicsMaterial": "Metal",
+			"ratings": {
+				"buoyancy": 7,
+				"density": 4,
+				"durability": 10,
+				"friction": 2
+			},
+			"renderable": "$CONTENT_DATA/Objects/Renderable/obj_pacificscrap_anchororb_t4.rend",
+			"restrictions": {
+				"liftable": false
+			},
+			"rotationSet": "PropY",
+			"stackSize": 1,
+			"uuid": "9b8c7d6e-1f2a-4b3c-8d4e-5f6a7b8c9d0e",
+			"sphere": {
+				"diameter": 4
+			}
+		},
+		{
+			"carryItem": true,
+			"color": "f27aa8",
+			"flammable": false,
+			"name": "obj_pacificscrap_energyanchor_unstable",
+			"physicsMaterial": "Metal",
+			"ratings": {
+				"buoyancy": 7,
+				"density": 4,
+				"durability": 10,
+				"friction": 2
+			},
+			"renderable": "$CONTENT_DATA/Objects/Renderable/obj_pacificscrap_anchororb_t3.rend",
+			"restrictions": {
+				"liftable": false
+			},
+			"rotationSet": "PropY",
+			"stackSize": 1,
+			"uuid": "e7a1c3d2-5b6f-4a8e-9c1d-2f3b4a5c6d7e",
+			"sphere": {
+				"diameter": 4
+			}
+		},
+		{
+			"color": "6e6e6e",
+			"flammable": false,
+			"name": "obj_pacificscrap_anchorpedestal",
+			"physicsMaterial": "Mechanical",
+			"ratings": {
+				"buoyancy": 5,
+				"density": 5,
+				"durability": 10,
+				"friction": 5
+			},
+			"renderable": "$CONTENT_DATA/Objects/Renderable/obj_pacificscrap_anchorpedestal.rend",
+			"restrictions": {
+				"buildable": false,
+				"connectable": false,
+				"convertibleToDynamic": false,
+				"destructable": false,
+				"erasable": false,
+				"liftable": false,
+				"paintable": false
+			},
+			"rotationSet": "PropY",
+			"showInInventory": false,
+			"uuid": "a6be2c12-f280-4d2b-b270-8e407813c28d",
+			"cylinder": {
+				"axis": "Y",
+				"depth": 6,
+				"diameter": 6,
+				"margin": 0.04
+			}
+		},
+		{
+			"box": {
+				"x": 4,
+				"y": 3,
+				"z": 3
+			},
+			"color": "f1a400",
+			"flammable": false,
+			"name": "obj_pacificscrap_arcdevice",
+			"physicsMaterial": "Mechanical",
+			"ratings": {
+				"buoyancy": 6,
+				"density": 5,
+				"durability": 8,
+				"friction": 4
+			},
+			"renderable": "$CONTENT_DATA/Objects/Renderable/obj_pacificscrap_arcdevice.rend",
+			"restrictions": {
+				"usable": true
+			},
+			"rotationSet": "PropYZ",
+			"scripted": {
+				"classname": "ArcDevice",
+				"filename": "$CONTENT_DATA/Scripts/ArcDevice.lua"
+			},
+			"stackSize": 1,
+			"uuid": "a6258a75-ea2b-47f7-acec-a3ace313bbd9",
+			"carryItem": true,
+			"sticky": "+X-X+Y-Y+Z-Z"
+		},
+		{
+			"color": "2a9d8f",
+			"flammable": false,
+			"name": "obj_pacificscrap_fabricator",
+			"physicsMaterial": "Mechanical",
+			"ratings": {
+				"buoyancy": 4,
+				"density": 6,
+				"durability": 8,
+				"friction": 5
+			},
+			"renderable": "$SURVIVAL_DATA/Character/Char_Workbench/char_workbench.rend",
+			"restrictions": {
+				"buildable": false,
+				"connectable": false,
+				"convertibleToDynamic": false,
+				"destructable": false,
+				"erasable": false,
+				"liftable": false,
+				"paintable": false,
+				"usable": true
+			},
+			"rotationSet": "PropY",
+			"scripted": {
+				"classname": "Fabricator",
+				"filename": "$CONTENT_DATA/Scripts/Fabricator.lua"
+			},
+			"stackSize": 1,
+			"uuid": "7ee97af5-72b9-4335-a3bd-e80d49dab105",
+			"box": {
+				"x": 5,
+				"y": 11,
+				"z": 3
+			}
+		},
+		{
+			"color": "2e8b3a",
+			"flammable": false,
+			"box": {
+				"x": 12,
+				"y": 9,
+				"z": 10
+			},
+			"name": "obj_pacificscrap_friendlydumpster",
+			"physicsMaterial": "Metal",
+			"ratings": {
+				"buoyancy": 2,
+				"density": 8,
+				"durability": 10,
+				"friction": 6
+			},
+			"renderable": "$SURVIVAL_DATA/Objects/Renderable/survivalobject/obj_survivalobject_ruinchest.rend",
+			"restrictions": {
+				"usable": true,
+				"erasable": false,
+				"liftable": false,
+				"destructable": false,
+				"convertibleToDynamic": false,
+				"buildable": false,
+				"connectable": false
+			},
+			"rotationSet": "PropY",
+			"scripted": {
+				"classname": "FriendlyDumpster",
+				"filename": "$CONTENT_DATA/Scripts/FriendlyDumpster.lua"
+			},
+			"showInInventory": false,
+			"stackSize": 1,
+			"uuid": "d0f1e2a3-b4c5-4d6e-8f70-81a2b3c4d5e6"
+		},
+		{
+			"color": "c0392b",
+			"flammable": false,
+			"name": "obj_pacificscrap_fuelpump",
+			"physicsMaterial": "Metal",
+			"ratings": {
+				"buoyancy": 2,
+				"density": 8,
+				"durability": 10,
+				"friction": 6
+			},
+			"renderable": "$CONTENT_DATA/Objects/Renderable/obj_pacificscrap_fuelpump.rend",
+			"restrictions": {
+				"usable": true,
+				"erasable": false,
+				"liftable": false,
+				"destructable": false,
+				"convertibleToDynamic": false,
+				"buildable": false,
+				"connectable": false,
+				"paintable": false
+			},
+			"rotationSet": "PropY",
+			"scripted": {
+				"classname": "FuelPump",
+				"filename": "$CONTENT_DATA/Scripts/FuelPump.lua"
+			},
+			"stackSize": 1,
+			"uuid": "e3473813-1984-4a22-9ef7-b1b9f735ccbf",
+			"box": {
+				"x": 4,
+				"y": 8,
+				"z": 3
+			}
+		},
+		{
+			"color": "2a7fbf",
+			"flammable": false,
+			"hull": {
+				"col": "$SURVIVAL_DATA/Objects/Collision/survivalobject/obj_survivalobject_garageconsole_col.fbx",
+				"x": 5,
+				"y": 7,
+				"z": 5
+			},
+			"name": "obj_pacificscrap_routeplanner",
+			"physicsMaterial": "Metal",
+			"ratings": {
+				"buoyancy": 2,
+				"density": 6,
+				"durability": 8,
+				"friction": 5
+			},
+			"renderable": "$SURVIVAL_DATA/Objects/Renderable/survivalobject/obj_survivalobject_garageconsole.rend",
+			"restrictions": {
+				"buildable": false,
+				"connectable": false,
+				"convertibleToDynamic": false,
+				"destructable": false,
+				"erasable": false,
+				"liftable": false,
+				"paintable": false,
+				"usable": true
+			},
+			"rotationSet": "PropY",
+			"scripted": {
+				"classname": "RoutePlanner",
+				"filename": "$CONTENT_DATA/Scripts/RoutePlanner.lua"
+			},
+			"stackSize": 1,
+			"uuid": "c1d2e3f4-a5b6-4c7d-8e9f-a0b1c2d3e4f5"
+		},
+		{
+			"color": "e8811c",
+			"flammable": false,
+			"name": "obj_pacificscrap_supplypod",
+			"physicsMaterial": "Metal",
+			"ratings": {
+				"buoyancy": 3,
+				"density": 7,
+				"durability": 10,
+				"friction": 6
+			},
+			"renderable": "$SURVIVAL_DATA/Objects/Renderable/survivalobject/obj_survivalobject_ruinchest.rend",
+			"restrictions": {
+				"usable": true,
+				"erasable": false,
+				"liftable": false,
+				"destructable": false,
+				"convertibleToDynamic": false,
+				"buildable": false,
+				"connectable": false,
+				"paintable": false
+			},
+			"rotationSet": "PropY",
+			"scripted": {
+				"classname": "SupplyPod",
+				"filename": "$CONTENT_DATA/Scripts/SupplyPod.lua"
+			},
+			"showInInventory": false,
+			"stackSize": 1,
+			"uuid": "7de73157-8f20-4fe6-9514-299fc166aaf7",
+			"box": {
+				"x": 12,
+				"y": 9,
+				"z": 10
+			}
+				},
+		{
+			"color": "9f5223",
+			"flammable": true,
+			"name": "obj_scrap_smallwheel",
+			"physicsMaterial": "Rubber",
+			"ratings": {
+				"buoyancy": 4,
+				"density": 3,
+				"durability": 2,
+				"friction": 6
+			},
+			"renderable": "$SURVIVAL_DATA/Objects/Renderable/interactive/obj_vehicle_smallwheel_worn.rend",
+			"rotationSet": "PropZNegZ",
+			"stackSize": 5,
+			"sticky": "-Z+Z",
+			"uuid": "59f6951a-a450-42bf-ad03-54567cb70245",
+			"cylinder": {
+				"axis": "Z",
+				"depth": 1,
+				"diameter": 3,
+				"margin": 0.5
+			}
+		}
+	]
+}

@@ -1,0 +1,72 @@
+{
+	"list": [
+		{
+			"uuid": "a7b2c18a-6aeb-4437-821d-da31407e816f",
+			"title": "Distress Call",
+			"speaker": "Farmer",
+			"hideInLogbook": true,
+			"entries": [
+				{
+					"name": "DistressCall",
+					"audio": "Farmerbuilder - Talk",
+					"lines": [
+						{ "duration": 4.0, "text": "Hello? Hello! Is this thing on? Is anybody out there?" },
+						{ "duration": 5.0, "text": "This is the farmers' hideout, out past the junctions. We saw your gateway light up the sky last night." },
+						{ "duration": 5.0, "text": "If you made it through the zone in one piece, you're the only one who has in a long while." },
+						{ "duration": 5.0, "text": "We're in a bad way. The storms keep closing in, the bots ransacked the fields, and the pantry's near empty." },
+						{ "duration": 5.0, "text": "There's no way out of here for us. Not with our old trucks, not through all that." },
+						{ "duration": 5.0, "text": "Please, come find us. We're down a side road, off one of the first junctions out from your garage." },
+						{ "duration": 4.0, "text": "Look for it on your Route Planner. We'll keep the lights on for you." },
+						{ "duration": 3.0, "text": "And hurry. Please." }
+					]
+				}
+			]
+		},
+		{
+			"uuid": "4929056a-4cdf-49a4-85e8-cd5406677f11",
+			"title": "The Hideout",
+			"speaker": "Farmer",
+			"hideInLogbook": true,
+			"entries": [
+				{
+					"name": "HideoutTalk",
+					"audio": "Farmerbuilder - Talk",
+					"lines": [
+						{ "duration": 4.0, "text": "Well I'll be. You actually came. Welcome to what's left of the hideout." },
+						{ "duration": 5.0, "text": "I won't lie to you, we're hungry. The fields out here grow nothing but weeds and bot scrap now." },
+						{ "duration": 5.0, "text": "But the old packing stations out on the roads still have food in them. Crates of it, if the bots haven't torn them apart." },
+						{ "duration": 5.0, "text": "Pack us some crates and bring them back here. Drop them in the dropzone out front and hit the button." },
+						{ "duration": 5.0, "text": "Do that, and I'll get you something worth the trouble: a key to the Mid Zone. We've been holding on to one for years." },
+						{ "duration": 5.0, "text": "Mind you, past those junctions it's dangerous. The ground's soaked in chemicals and the bots out there shoot back." },
+						{ "duration": 4.0, "text": "So stock up, keep your car in one piece, and get us that food. We'll be right here." }
+					]
+				},
+				{
+					"name": "HideoutReminder",
+					"audio": "Farmerbuilder - Talk",
+					"lines": [
+						{ "duration": 4.0, "text": "Any luck with those crates? The packing stations are out along the roads." },
+						{ "duration": 4.0, "text": "Bring them to the dropzone out front. That key to the Mid Zone is yours once we're fed." }
+					]
+				},
+				{
+					"name": "HideoutKey",
+					"audio": "Farmerbuilder - Talk",
+					"lines": [
+						{ "duration": 4.0, "text": "Would you look at that. Real food, fresh from the packing stations. We'll finally eat well." },
+						{ "duration": 5.0, "text": "You've done more for us than anyone else out here ever has. We won't forget it." },
+						{ "duration": 5.0, "text": "A deal's a deal. Here: the key to the Mid Zone. It opens the way past the Outer Zone's last junctions." },
+						{ "duration": 4.0, "text": "Go on, take it. And remember what I said: it's a whole lot meaner out there." }
+					]
+				},
+				{
+					"name": "HideoutThanks",
+					"audio": "Farmerbuilder - Talk",
+					"lines": [
+						{ "duration": 4.0, "text": "We owe you one, friend. Watch yourself out there in the Mid Zone." }
+					]
+				}
+			]
+		}
+	]
+}

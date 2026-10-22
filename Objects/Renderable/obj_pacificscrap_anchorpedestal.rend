@@ -1,0 +1,25 @@
+{
+	"lodList" : 
+	[
+		{
+			"mesh" : "$CONTENT_DATA/Objects/Mesh/obj_pacificscrap_anchorpedestal.fbx",
+			"subMeshMap" : 
+			{
+				"barrack_support:blinn2" : 
+				{
+					"custom" : 
+					{
+						"metalProfile" : "DifAsgNor_Painted"
+					},
+					"material" : "DifAsgNor_Metal",
+					"textures" : 
+					{
+						"asg" : "$SURVIVAL_DATA/Objects/Textures/building/obj_building_barracksupportbase_asg.tga",
+						"diffuse" : "$SURVIVAL_DATA/Objects/Textures/building/obj_building_barracksupportbase_dif.tga",
+						"normalMap" : "$SURVIVAL_DATA/Objects/Textures/building/obj_building_barracksupportbase_nor.tga"
+					}
+				}
+			}
+		}
+	]
+}

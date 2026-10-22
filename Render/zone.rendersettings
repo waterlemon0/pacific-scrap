@@ -1,0 +1,185 @@
+{
+	"settings": {
+		"GI": {
+			"override": false,
+			"weight": 0.5
+		},
+		"LUT": {
+			"LUT": "Tod_Day",
+			"override": false
+		},
+		"camera_light": {
+			"color": [
+				1.0,
+				0.832031012,
+				0.832031012,
+				0.910156012
+			],
+			"color_mul": 1.0,
+			"far": {
+				"color": [
+					1.0,
+					1.0,
+					1.0,
+					1.0
+				],
+				"color_mul": 1.0,
+				"enable": false,
+				"intensity": 0.349999994,
+				"range": 19.0
+			},
+			"intensity": 0.300000012,
+			"override": false,
+			"range": 31.0
+		},
+		"fog": {
+			"end": 70.0,
+			"end_color": [
+				0.367538452,
+				0.72387588,
+				0.84765625,
+				1.0
+			],
+			"end_mul": 1.0,
+			"fade_distance": 55.0,
+			"falloff": 1.0,
+			"override": true,
+			"start": 0.0,
+			"start_color": [
+				0.328125,
+				0.685058594,
+				1.0,
+				0.5234375
+			],
+			"start_mul": 1.0,
+			"vertical_fog": {
+				"end": 35.0,
+				"end_color": [
+					0.53725493,
+					0.800000072,
+					0.92549026,
+					0.0
+				],
+				"end_mul": 1.0,
+				"fade_distance": 60.0,
+				"falloff": 1.2,
+				"opacity": 0.8,
+				"start": 0.0,
+				"start_color": [
+					1.0,
+					1.0,
+					1.0,
+					1.0
+				],
+				"start_mul": 1.0,
+				"selective_override": {
+					"end": true,
+					"fade_distance": true,
+					"falloff": true,
+					"opacity": true
+				}
+			},
+			"selective_override": {
+				"end": true,
+				"fade_distance": true,
+				"falloff": true
+			}
+		},
+		"horizon_light": {
+			"bottom_color": [
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"bottom_intensity": 1.0,
+			"direction": [
+				0.0,
+				0.0,
+				-1.0
+			],
+			"enable": false,
+			"end": 2000.0,
+			"falloff": 2.0,
+			"middle_color": [
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"middle_intensity": 1.0,
+			"start": 1000.0,
+			"top_color": [
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"top_intensity": 1.0
+		},
+		"reflection_color": {
+			"override": false,
+			"reflection_high": {
+				"max": 0.0,
+				"min": 1.0,
+				"mul": 1.0
+			},
+			"reflection_low": {
+				"max": 0.0,
+				"min": 1.0,
+				"mul": 1.0
+			},
+			"reflection_medium": {
+				"max": 0.0,
+				"min": 1.0,
+				"mul": 1.0
+			},
+			"reflection_off": {
+				"max": 0.0,
+				"min": 1.0,
+				"mul": 1.0
+			}
+		},
+		"volumetric_fog": {
+			"intensity": 1.5,
+			"loop_speed": 0.035,
+			"max": 1.0,
+			"min": 0.3,
+			"override": true,
+			"scale": [
+				0.08,
+				0.08,
+				0.08
+			],
+			"scroll_speed": [
+				0.06,
+				0.04,
+				0.02
+			]
+		},
+		"pacific_night": {
+			"volumetric_intensity": 0.15,
+			"vertical_opacity": 0.2
+		},
+		"pacific_colors": {
+			"day": [
+				0.62,
+				0.68,
+				0.72
+			],
+			"night": [
+				0.025,
+				0.03,
+				0.045
+			],
+			"sky": {
+				"start": 150.0,
+				"end": 650.0,
+				"falloff": 1.0,
+				"top": 0.75,
+				"middle": 1.0,
+				"bottom": 1.0
+			}
+		}
+	}
+}

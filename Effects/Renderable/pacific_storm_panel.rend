@@ -1,0 +1,60 @@
+{
+	"lodList": [
+		{
+			"mesh": "$SURVIVAL_DATA/Effects/Meshes/hologram_refresh_scanplane.fbx",
+			"minViewSize": 0,
+			"subMeshMap": {
+				"material": {
+					"custom": {
+						"laser": {
+							"baseColor": [
+								1.0,
+								0.45,
+								0.05,
+								0.7
+							],
+							"highlightColor": [
+								1.0,
+								0.65,
+								0.2,
+								0.8
+							],
+							"glowStrength": 0.25,
+							"fade": {
+								"fadeRange": 1.0,
+								"fadeValue": 0.0
+							},
+							"fog": {
+								"fogLoopSpeed": 0.0,
+								"fogMin": 1.0,
+								"fogOpacity": 0.0,
+								"fogScale": 1.0,
+								"fogScrollSpeed": 0.0
+							},
+							"fresnel": {
+								"fresnelExponent": 1.0,
+								"fresnelIntensity": 0.0
+							},
+							"intersection": {
+								"intersectHeight": 0.0,
+								"intersectIntensity": 0.0
+							},
+							"scanLines": {
+								"scanLineFrequency1": 0.0,
+								"scanLineFrequency2": 0.0,
+								"scanLineIntensity1": 0.0,
+								"scanLineIntensity2": 0.0,
+								"scanLineSpeed1": 0.0,
+								"scanLineSpeed2": 0.0
+							}
+						}
+					},
+					"material": "LaserSimple",
+					"textures": {
+						"laser": "$GAME_DATA/Textures/Default/default_dif.tga"
+					}
+				}
+			}
+		}
+	]
+}

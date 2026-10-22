@@ -1,0 +1,105 @@
+{
+	"lodList": [
+		{
+			"mesh": "$CONTENT_DATA/Objects/Mesh/obj_pacificscrap_arcdevice.fbx",
+			"subMeshMap": {
+				"arcdevice_m00_containerbattery": {
+					"material": "DifAsgNor_Metal",
+					"custom": {
+						"metalProfile": "DifAsgNor_Painted"
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_battery_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_battery_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_battery_nor.tga"
+					}
+				},
+				"arcdevice_m01_containergas": {
+					"material": "DifAsgNor_Metal",
+					"custom": {
+						"metalProfile": "DifAsgNor_Painted"
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_gas_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_gas_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_gas_nor.tga"
+					}
+				},
+				"arcdevice_m02_sm_caution": {
+					"material": "DifAsg",
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/blocks/blk_caution01_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/blocks/blk_caution01_asg.tga"
+					}
+				},
+				"arcdevice_m03_sm_lamps": {
+					"material": "DifAsg",
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/survivalobject/obj_survivalobject_warehouseconsoledisplay03_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/survivalobject/obj_survivalobject_warehouseconsoledisplay03_asg.tga"
+					}
+				},
+				"arcdevice_m04_connectionpoint": {
+					"material": "DifAsgNor_Metal",
+					"custom": {
+						"metalProfile": "DifAsgNor_LowReflection"
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/containers/obj_interactive_container_connectorpoint_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/containers/obj_interactive_container_connectorpoint_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Objects/Textures/containers/obj_interactive_container_connectorpoint_nor.tga"
+					}
+				},
+				"arcdevice_m05_connectionpoint2": {
+					"material": "DifAsgNor_Metal",
+					"custom": {
+						"metalProfile": "DifAsgNor_LowReflection"
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/containers/obj_interactive_container_connectorpoint_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/containers/obj_interactive_container_connectorpoint_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Objects/Textures/containers/obj_interactive_container_connectorpoint_nor.tga"
+					}
+				},
+				"arcdevice_m06_screen": {
+					"material": "UVAnimDifAsgNor",
+					"custom": {
+						"uv0": {
+							"u": 1.0,
+							"v": 0.166999996
+						}
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_screen_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_screen_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Objects/Textures/containers/obj_containers_screen_nor.tga"
+					}
+				},
+				"arcdevice_m07_radar": {
+					"material": "DifAsgNor_Metal",
+					"custom": {
+						"metalProfile": "DifAsgNor_Painted"
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/interactive/obj_interactive_beacon_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/interactive/obj_interactive_beacon_asg.tga",
+						"normalMap": "$SURVIVAL_DATA/Objects/Textures/interactive/obj_interactive_beacon_nor.tga"
+					}
+				},
+				"arcdevice_m08_radar_uvanim": {
+					"material": "UVAnimDifAsg",
+					"custom": {
+						"uv0": {
+							"u": 1.0,
+							"v": 0.25
+						}
+					},
+					"textures": {
+						"diffuse": "$SURVIVAL_DATA/Objects/Textures/interactive/obj_interactive_beaconuvanim_dif.tga",
+						"asg": "$SURVIVAL_DATA/Objects/Textures/interactive/obj_interactive_beaconuvanim_asg.tga"
+					}
+				}
+			}
+		}
+	]
+}

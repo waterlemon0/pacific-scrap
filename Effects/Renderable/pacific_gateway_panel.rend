@@ -1,0 +1,18 @@
+{
+	"lodList": [
+		{
+			"mesh": "$SURVIVAL_DATA/Effects/Meshes/hologram_refresh_scanplane.fbx",
+			"minViewSize": 0,
+			"subMeshMap": {
+				"material": {
+					"material": "Additive",
+					"textureList": [
+						"$CONTENT_DATA/Effects/Textures/pacific_gateway_glow.tga",
+						"",
+						""
+					]
+				}
+			}
+		}
+	]
+}

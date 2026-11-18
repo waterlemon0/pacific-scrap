@@ -2169,7 +2169,13 @@ function ZoneWorld.cl_setStormScreen( self, enable )
 end
 
 function ZoneWorld.client_onUpdate( self, dt )
-	BaseWorld.client_onUpdate( self, dt )
+	-- Survival 1.0.7 removed BaseWorld.client_onUpdate. Calling the missing
+	-- function errored, and after that error the game stopped running this
+	-- world's script: the junction gates never opened (cars couldn't reach the
+	-- exits), and the storm wall and gateway beam weren't drawn.
+	if BaseWorld.client_onUpdate then
+		BaseWorld.client_onUpdate( self, dt )
+	end
 	if self.cl.retired then
 		return
 	end

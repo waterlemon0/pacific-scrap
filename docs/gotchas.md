@@ -62,6 +62,18 @@ Read this before changing world, portal or save code.
 
 - `setmetatable` isn't allowed.
 - `dofile` only works at the top level of a script, not inside functions.
+- `dofile` runs a file only **once per Lua state**. A file that a world script
+  loaded first isn't run again when the game script `dofile`s it, so code in it
+  that needs the `Game` class never runs. Give game code and world code their
+  own files.
+- **One Lua error in a world callback stops that world's script.** The error is
+  logged once, then the game stops calling the world's callbacks (fixed
+  update included; area triggers still fire). Survival 1.0.7 removed
+  `BaseWorld.client_onUpdate`; `ZoneWorld.client_onUpdate` still called it, so
+  every zone silently stopped: junction gates stayed shut (cars couldn't reach
+  the exits), no storm wall, no gateway beam. Check that a Survival base
+  function exists before calling it, and after a game update grep the log for
+  `attempt to call`.
 - GUI paths can't use `$CONTENT_DATA`. Use `$CONTENT_3c9f5e62-8d1a-4b7e-9a35-6f2d0c4e8b71`
   (the mod's localId from `description.json`).
 - Lua `local`s must be defined above where they're used. A function referring
